@@ -18,7 +18,7 @@ import warnings
 import tqdm  #for progress bar
 
 import qudipy.qutils.matrices as matr
-import qudipy.qutils.qmath as qmath
+import qudipy.qutils.math as qmath
 
 from qudipy.circuit import ControlPulse
 from qudipy.utils.constants import Constants 

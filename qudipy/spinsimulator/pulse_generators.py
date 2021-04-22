@@ -141,6 +141,7 @@ def rot_square(qubits, N, axis, theta, B_0, B_rf, f_rf=None,
                                                    f_rf, delta_g, num_val)]
     else:
         raise ValueError("Incorrect input of axis, please try again")
+        return 0
     
 def swap(qubits, N, J, B_0=0, f_rf=None, num_val=300):
     """

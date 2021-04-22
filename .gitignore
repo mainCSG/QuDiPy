@@ -9,4 +9,3 @@ tutorials/QuDiPy tutorial data
 __pycache__/
 *.csv
 tutorials/test_2.py
-.vscode/settings.json
