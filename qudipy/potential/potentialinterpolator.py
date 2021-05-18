@@ -43,7 +43,7 @@ class PotentialInterpolator:
             The default is a Constants object assuming vacuum as the material
             system.
         y_slice : float, optional
-            Used to create a interpolator of only 1D poetentials. Specify a 
+            Used to create an interpolator of only 1D poetentials. Specify a 
             slice along the y-axis at which to take the 1D potential when 
             constructing the interpolator. Units should be specified in [m]. 
             The default is None.
