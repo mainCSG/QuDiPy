@@ -43,7 +43,7 @@ class PotentialInterpolator:
             The default is a Constants object assuming vacuum as the material
             system.
         y_slice : float, optional
-            Used to create an interpolator of only 1D poetentials. Specify a 
+            Used to create an interpolator of only 1D potentials. Specify a 
             slice along the y-axis at which to take the 1D potential when 
             constructing the interpolator. Units should be specified in [m]. 
             The default is None.
@@ -122,9 +122,8 @@ class PotentialInterpolator:
                                  ' correct number of elements.\n' + 
                                  f'Expected {exp_num} or {exp_num-2} number' +
                                  f' of elements, got {len(volt_vec)} instead.')
-            else:
-                volt_vec = [volt_vec[idx] for idx in range(len(volt_vec)) if
-                            idx not in self.single_dims]
+            volt_vec = [volt_vec[idx] for idx in range(len(volt_vec)) if
+                        idx not in self.single_dims]
         
         # Check if values are out of min/max range
         for idx in range(self.n_voltage_ctrls):
