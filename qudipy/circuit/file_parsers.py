@@ -90,7 +90,7 @@ def load_pulses(f_names):
     # Check if list of file names was passed.
     # If it was not, then only a single file name was passed and we need to
     # wrap it in a list container.
-    if isinstance(f_names, list) == False:
+    if not isinstance(f_names, list):
         f_names = [f_names]
     
     # Loop through each file, load the pulse then add to the pulse dictionary.
@@ -150,10 +150,7 @@ def load_circuit(f_name, gate_dict={}):
             
             # Track if the current line in the file is an ideal gate or a
             # pulse file that was loaded
-            if check_ideal_gate(gate_name):
-                is_ideal_gate = True
-            else:
-                is_ideal_gate = False                            
+            is_ideal_gate = check_ideal_gate(gate_name)
             
             # Check that the gate name is one that was actually loaded or a
             # valid ideal gate and print an error if not
@@ -262,7 +259,7 @@ def check_ideal_gate(gate_name, qubit_idx=[]):
             return True
     
     # Check SWAP and RSWAP
-    if gate_name == "SWAP" or gate_name == "RSWAP":
+    if gate_name in ("SWAP", "RSWAP"):
         # Now check qubit number, must be an even number of used qubits
         if np.mod(len(qubit_idx),2) == 0:
             return True
