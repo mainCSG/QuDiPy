@@ -62,7 +62,7 @@ def rot_square(qubits, N, axis, theta, B_0, B_rf, f_rf=None,
     """
     if f_rf is None:
         f_rf = 2* consts.muB * B_0 / consts.hbar 
-    if axis == "X" or axis == "Y":
+    if axis in ("X", "Y"):
         phis = np.full(num_val, 0.)
         if axis == "Y":
             phis = np.full(num_val, 90)
@@ -139,9 +139,8 @@ def rot_square(qubits, N, axis, theta, B_0, B_rf, f_rf=None,
                                                    f_rf, delta_g, num_val), 
                 rot_square(qubits, N, "X", 90, B_0, B_rf, 
                                                    f_rf, delta_g, num_val)]
-    else:
-        raise ValueError("Incorrect input of axis, please try again")
-        return 0
+    raise ValueError("Incorrect input of axis, please try again")
+    
     
 def swap(qubits, N, J, B_0=0, f_rf=None, num_val=300):
     """
