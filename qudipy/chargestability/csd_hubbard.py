@@ -3,14 +3,17 @@ File used to generate and plot charge stability diagrams from provided potential
 For more information about the method, see the references https://doi.org/10.1103/PhysRevB.83.235314 and https://doi.org/10.1103/PhysRevB.83.161301
 '''
 
+# From builtins
 import copy
+import itertools
+# From external modules
 import numpy as np
 import pandas as pd
-import itertools
-from scipy import linalg as la
+# module
 from ..utils.constants import Constants
+from ..qutils.hamiltonian import Hamiltonian
 
-class HubbardCSD:
+class HubbardCSD(Hamiltonian):
     '''
     Initialize the charge stability diagram class which generates charge stability diagrams based on given capacitance parameters.
     Based on section III in https://doi.org/10.1103/PhysRevB.83.235314.
@@ -69,17 +72,21 @@ class HubbardCSD:
         # These next steps generate the fixed portion of the Hamiltonian, which is created on initialization since it is independent of voltage
 
         # First, generate the matrix of the correct size
-        self.fixed_hamiltonian = np.zeros((len(self.basis),len(self.basis)))
+        self.size = (len(self.basis),len(self.basis))
+        fixed_hamiltonian = np.zeros(self.size)
 
         # Then add the component to the fixed portion of the Hamiltonian that you want to consider
         if h_t is True:
-            self.fixed_hamiltonian += self.__generate_h_t()
+            fixed_hamiltonian += self.__generate_h_t()
 
         if h_u is True:
-            self.fixed_hamiltonian += self.__generate_h_u()
+            fixed_hamiltonian += self.__generate_h_u()
+
+        super().__init__(fixed_hamiltonian)
 
     def generate_csd(self, initial_v, g1, g2, v_g1_max, v_g2_max, num=100):
-        '''Generates the charge stability diagram between v_g1(2)_min and v_g1(2)_max with num by num data points in 2D
+        '''
+        Generates the charge stability diagram between v_g1(2)_min and v_g1(2)_max with num by num data points in 2D
 
         Parameters
         ----------
@@ -98,7 +105,7 @@ class HubbardCSD:
         None
         '''
 
-        # Stores parameters for late
+        # Stores parameters for later use
         self.num = num
         self.g1 = g1 - 1 #For consistent indexing
         self.g2 = g2 - 1 
@@ -152,17 +159,14 @@ class HubbardCSD:
         '''
         # Convert from voltages to chemical potentials using the capacitance matrix
         chem_vect = self._volt_to_chem_pot(volt_vect)
-        h_mu = np.zeros(self.fixed_hamiltonian.shape)
+        h_mu = np.zeros(self.size)
 
         # Compute the variable part of the Hamiltonian
         for i in range(self.basis_length):
             h_mu[i][i] = (- chem_vect * self.basis_occupations[i]).sum()
 
-        current_hamiltonian = self.fixed_hamiltonian + h_mu
-        eigenvals, eigenvects = la.eigh(current_hamiltonian)
-        eigenvects = np.transpose(eigenvects) # To get column eigenvectors not column entries
-        lowest_eigenvect = np.squeeze(eigenvects[np.argmin(eigenvals)])
-        lowest_eigenvect_prob = np.real(lowest_eigenvect * np.conj(lowest_eigenvect))
+        _, eigenvect = self.ground_state(h_mu)
+        lowest_eigenvect_prob = np.real(eigenvect * np.conj(eigenvect))
         occupation_list = []
         for i in range(self.n_sites):
             occupation_list.append((lowest_eigenvect_prob * getattr(self, 'basis_occupation_' + str(i+1))).sum())
@@ -221,10 +225,10 @@ class HubbardCSD:
         None
         '''
         # Create empty matrix to fill
-        h_t = np.zeros(self.fixed_hamiltonian.shape)
+        h_t = np.zeros(self.size)
 
         # Go over pairs of states that are not the same (since H_t has no diagonal terms)
-        for i in range(self.fixed_hamiltonian.shape[0]):
+        for i in range(self.size[0]):
             for j in range(i):
                 state_1 = self.basis[i]
                 state_2 = self.basis[j]
@@ -267,10 +271,10 @@ class HubbardCSD:
         '''
 
         # Create empty matrix to fill
-        h_u = np.zeros(self.fixed_hamiltonian.shape)
+        h_u = np.zeros(self.size)
 
         # Go over all states (but not pairs since H_U is diagonal)
-        for i in range(self.fixed_hamiltonian.shape[0]):
+        for i in range(self.size[0]):
                 state_1 = self.basis[i]
                 # Go over pairs of labels, which correspond to whether particular (location, spin) are occupied
                 result = 0
