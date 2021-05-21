@@ -70,16 +70,14 @@ class HubbardCSD:
         if n_e > 2 * n_sites:
             raise Exception(f"Number of electrons ({n_e}) exceeds twice the amount of"
                             + " sites ({n_sites}) allowed")
-        else:
-            self.n_e = n_e
-            self.n_sites = n_sites
+        self.n_e = n_e
+        self.n_sites = n_sites
 
         cap_matrix = np.array(cap_matrix)
         if cap_matrix.shape != (n_sites, n_sites):
             raise Exception(f"Expected capacitance matrix of shape ({n_sites},{n_sites}), instead" 
                             + " got capacitance matrix of shape {cap_matrix.shape}")
-        else:
-            self.cap_matrix = cap_matrix
+        self.cap_matrix = cap_matrix
 
         # Generates the basis to be used
         self.__generate_basis()
