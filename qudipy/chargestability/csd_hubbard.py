@@ -120,9 +120,10 @@ class HubbardCSD:
     
     def _volt_vect_gen(self, v_1, v_2):
         '''
-        Given two voltages v_1 and v_2 applied to gates g1 and g2 respectivey, 
-        return the voltage vector with those voltages applied to those gates and everything other
-        voltage set to their initial value
+        Given two voltages v_1 and v_2 applied to gates g1 and g2
+        respectively, return the voltage vector with those voltages
+        applied to those gates and everything other voltage set to 
+        their initial value
 
         Parameters
         ----------
@@ -140,7 +141,8 @@ class HubbardCSD:
 
     def _lowest_energy(self, volt_vect):
         '''
-        Given a vector of gate voltages, determine the lowest energy occupation
+        Given a vector of gate voltages, determine the lowest energy
+        occupation
 
         Parameters
         ----------
@@ -170,7 +172,8 @@ class HubbardCSD:
 
     def __generate_basis(self):
         '''
-        Creates the basis of all possible states given the constraints on the number of sites and number of electrons
+        Creates the basis of all possible states given the constraints
+        on the number of sites and number of electrons
 
         Parameters
         ----------
@@ -210,7 +213,8 @@ class HubbardCSD:
 
     def __generate_h_t(self):
         '''
-        Generates the tunnel coupling term of the Hamiltonian in the Hubbard model
+        Generates the tunnel coupling term of the Hamiltonian in the
+        Hubbard model
 
         Parameters
         ----------
@@ -245,8 +249,12 @@ class HubbardCSD:
                                 for m in range(n):
                                     # Add contribution to result is that tunnel coupling term exists (i.e non-zero)
                                     if hasattr(self, 't_' + str(m+1) + str(n+1)):
-                                        result += getattr(self, 't_' + str(m+1) + str(n+1)) * self.__inner_product(state_1, self.__create(self.__annihilate(state_2, k), l))
-                                        result += getattr(self, 't_' + str(m+1) + str(n+1)) * self.__inner_product(state_1, self.__create(self.__annihilate(state_2, l), k))
+                                        result += getattr(self, 't_' + str(m+1) + str(n+1)) \
+                                                          * self.__inner_product(state_1, 
+                                                          self.__create(self.__annihilate(state_2, k), l))
+                                        result += getattr(self, 't_' + str(m+1) + str(n+1)) \
+                                                          * self.__inner_product(state_1, 
+                                                          self.__create(self.__annihilate(state_2, l), k))
 
                 h_t[i][j] = -result
                 
@@ -255,7 +263,8 @@ class HubbardCSD:
 
     def __generate_h_u(self):
         '''
-        Generates the Coulomb repulsion term of the Hamiltonian in the Hubbard model
+        Generates the Coulomb repulsion term of the Hamiltonian in the Hubbard
+        model
 
         Parameters
         ----------
@@ -279,19 +288,20 @@ class HubbardCSD:
                         # Then, go over over all site pairs of sites and add their contribution if it is present
                         for j in range(self.n_sites):
                             for m in range(j+1): # j+1 to get same site repulsion
-                                if self.basis_labels[k][0] == 'site_' + str(j+1) and self.basis_labels[l][0] == 'site_' + str(m+1):
+                                if self.basis_labels[k][0] == 'site_' + str(j+1) \
+                                    and self.basis_labels[l][0] == 'site_' + str(m+1):
                                     if hasattr(self, 'U_' + str(m+1) + str(j+1)): # Check if inter-dot coupling is set between these two sites, skipping if is not
-                                        result += getattr(self, 'U_' + str(m+1) + str(j+1)) * self.__inner_product(state_1, self.__number(self.__number(state_1, k), l))
-
-
-
+                                        result += getattr(self, 'U_' + str(m+1) + str(j+1)) \
+                                            * self.__inner_product(state_1, 
+                                            self.__number(self.__number(state_1, k), l))
                 h_u[i][i] = result
         return h_u
 
     def _volt_to_chem_pot(self, volt_vect):
         '''
-        Converts from supplied voltage vector to chemical potential using the capacitance matrix
-        Requires the capacitance matrix of the system to already be specified
+        Converts from supplied voltage vector to chemical potential
+        using the capacitance matrix. Requires the capacitance matrix of
+        the system to already be specified
 
         Parameters
         ----------
@@ -309,8 +319,10 @@ class HubbardCSD:
 
     def __inner_product(self, state_1, state_2):
         '''
-        Computes the inner product of two orhtonormal states (lists with 0s and 1s only as entries)
-        Is a private function since this is not a general prupose inner product function but is useful for this file 
+        Computes the inner product of two orhtonormal states (lists with
+        0s and 1s only as entries). Is a private function since this is
+        not a general prupose inner product function but is useful for 
+        this file 
 
         Parameters
         ----------
@@ -330,7 +342,8 @@ class HubbardCSD:
 
     def __create(self, state, position):
         '''
-        Computes the creation operator acting on a state at a particular position
+        Computes the creation operator acting on a state at a particular
+        position
 
         Parameters
         ----------
@@ -352,7 +365,8 @@ class HubbardCSD:
 
     def __annihilate(self, state, position):
         '''
-        Computes the annihilation operator acting on a state at a particular position
+        Computes the annihilation operator acting on a state at a
+        particular position
 
         Parameters
         ----------
@@ -374,7 +388,8 @@ class HubbardCSD:
 
     def __number(self, state, position):
         '''
-        Computes the number oparator acting on a state at a particular position
+        Computes the number oparator acting on a state at a particular 
+        position
 
         Parameters
         ----------
