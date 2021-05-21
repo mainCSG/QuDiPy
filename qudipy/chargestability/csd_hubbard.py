@@ -1,6 +1,9 @@
 '''
-File used to generate and plot charge stability diagrams from provided potentials using the Hubbrad model
-For more information about the method, see the references https://doi.org/10.1103/PhysRevB.83.235314 and https://doi.org/10.1103/PhysRevB.83.161301
+File used to generate and plot charge stability diagrams from provided
+potentials using the Hubbrad model
+For more information about the method, see the references 
+https://doi.org/10.1103/PhysRevB.83.235314 and 
+https://doi.org/10.1103/PhysRevB.83.161301
 '''
 
 import copy
@@ -12,26 +15,38 @@ from ..utils.constants import Constants
 
 class HubbardCSD:
     '''
-    Initialize the charge stability diagram class which generates charge stability diagrams based on given capacitance parameters.
+    Initialize the charge stability diagram class which generates charge
+    stability diagrams based on given capacitance parameters.
     Based on section III in https://doi.org/10.1103/PhysRevB.83.235314.
-    This class is intended for use with NextNano potentials to simulate charge stability diagrams of various designs, but can also be used with analytic potentials.
+    This class is intended for use with NextNano potentials to simulate
+    charge stability diagrams of various designs, but can also be used 
+    with analytic potentials.
     '''
     def __init__(self, n_sites, n_e, cap_matrix, h_mu=False, h_t=False, h_u=False, param_dict=dict()):
         '''
 
         Parameters
         ----------
-        n_sites: Number of sites in the system that an electron may occupy.
-        n_e: Maximum number of electrons in the system. Must be less than or equal to 2*n_sites
-        cap_matrix: Dimensionless matrix which is used to convert from gate voltages to chemical potentials on individual dots
+        n_sites: Number of sites in the system that an electron may
+            occupy.
+        n_e: Maximum number of electrons in the system. Must be less 
+            than or equal to 2*n_sites
+        cap_matrix: Dimensionless matrix which is used to convert 
+            from gate voltages to chemical potentials on individual dots
 
         Keyword Arguments
         -----------------
-        h_mu: Whether to include the chemical potential term in Hamiltonian when Hamiltonian is created (default False)
-        h_t: Whether to include the tunnel coupling term in Hamiltonian when Hamiltonian is created (default False)
-        h_u: Whether to include Coulomb repulsion in Hamiltonian when Hamiltonian is created (default False)
-        param_dict: Dictionary of additional parameters in meV. The parameters can be U_ij or t_ij, which correspond to Coulomb repulsion or 
-                tunnel coupling between dots i and j respectively. See "Hubbard Charge Stability" tutorial for more information
+        h_mu: Whether to include the chemical potential term in
+            Hamiltonian when Hamiltonian is created (default False)
+        h_t: Whether to include the tunnel coupling term in Hamiltonian
+            when Hamiltonian is created (default False)
+        h_u: Whether to include Coulomb repulsion in Hamiltonian when
+            Hamiltonian is created (default False)
+        param_dict: Dictionary of additional parameters in meV. The
+            parameters can be U_ij or t_ij, which correspond to Coulomb 
+            repulsion or tunnel coupling between dots i and j
+            respectively. See "Hubbard Charge Stability" tutorial for 
+            more information
 
         Returns
         -------
@@ -48,18 +63,21 @@ class HubbardCSD:
             self.__setattr__(key, item)
 
         if self.h_mu is False:
-            raise Exception("Hamiltonian will be independent of gate voltages so no charge stability diagram can be generated")
+            raise Exception("Hamiltonian will be independent of gate voltages so no charge"
+                            + " stability diagram can be generated")
 
         # Check that number of electrons doesn't exceed twice the amount of sites
         if n_e > 2 * n_sites:
-            raise Exception(f"Number of electrons ({n_e}) exceeds twice the amount of sites ({n_sites}) allowed")
+            raise Exception(f"Number of electrons ({n_e}) exceeds twice the amount of"
+                            + " sites ({n_sites}) allowed")
         else:
             self.n_e = n_e
             self.n_sites = n_sites
 
         cap_matrix = np.array(cap_matrix)
         if cap_matrix.shape != (n_sites, n_sites):
-            raise Exception(f"Expected capacitance matrix of shape ({n_sites},{n_sites}), instead got capacitance matrix of shape {cap_matrix.shape}")
+            raise Exception(f"Expected capacitance matrix of shape ({n_sites},{n_sites}), instead" 
+                            + " got capacitance matrix of shape {cap_matrix.shape}")
         else:
             self.cap_matrix = cap_matrix
 
@@ -79,7 +97,9 @@ class HubbardCSD:
             self.fixed_hamiltonian += self.__generate_h_u()
 
     def generate_csd(self, initial_v, g1, g2, v_g1_max, v_g2_max, num=100):
-        '''Generates the charge stability diagram between v_g1(2)_min and v_g1(2)_max with num by num data points in 2D
+        '''
+        Generates the charge stability diagram between v_g1(2)_min
+        and v_g1(2)_max with num by num data points in 2D
 
         Parameters
         ----------
@@ -91,7 +111,8 @@ class HubbardCSD:
 
         Keyword Arguments
         -----------------
-        num: number of voltage point in 1d, which leads to a num^2 charge stability diagram (default 100)
+        num: number of voltage point in 1d, which leads to a num^2 charge
+            stability diagram (default 100)
 
         Returns
         -------
@@ -113,7 +134,8 @@ class HubbardCSD:
         self.v_2_values = np.around(np.linspace(self.v_g2_min, self.v_g2_max, num), decimals=6)
 
         # Loop over all voltage point combinations in list comprehension
-        occupation = [[[self._lowest_energy(self._volt_vect_gen(v_1, v_2))] for v_1 in self.v_1_values] for v_2 in self.v_2_values]
+        occupation = [[[self._lowest_energy(self._volt_vect_gen(v_1, v_2))] \
+                        for v_1 in self.v_1_values] for v_2 in self.v_2_values]
 
         # Create a num by num DataFrame from occupation data information as entries
         self.occupation = pd.DataFrame(occupation, index=self.v_1_values, columns=self.v_2_values)
@@ -167,7 +189,8 @@ class HubbardCSD:
         lowest_eigenvect_prob = np.real(lowest_eigenvect * np.conj(lowest_eigenvect))
         occupation_list = []
         for i in range(self.n_sites):
-            occupation_list.append((lowest_eigenvect_prob * getattr(self, 'basis_occupation_' + str(i+1))).sum())
+            occupation_list.append((lowest_eigenvect_prob * getattr(self, 'basis_occupation_' 
+                                    + str(i+1))).sum())
         return tuple(occupation_list)
 
     def __generate_basis(self):
