@@ -44,6 +44,7 @@ class ControlPulse:
         
         self.name = pulse_name
         self.length = pulse_length # Units are s
+        self.n_pts = 0 # Number of points in pulse (default 0), must be same amongst control variables
         
         self.ctrl_pulses = {
             }
@@ -53,6 +54,7 @@ class ControlPulse:
         self.ideal_gate = ideal_gate
         
         self.ctrl_time = None
+        
         
     def __call__(self, time_pts):
                 
@@ -249,7 +251,7 @@ class ControlPulse:
         # Check that the new control variable pulse has the same number of 
         # points as all the other control variables (if this is first one, 
         # then save the number of points)
-        if hasattr(self,'n_pts'):
+        if self.n_pts != 0:
             if len(var_pulse) != self.n_pts:
                 raise ValueError('Number of pulse points is not equal to the '+
                                  'current\nnumber of pulse points in previously '+
@@ -276,8 +278,8 @@ class ControlPulse:
             
     def _generate_ctrl_interpolators(self):
         '''
-        Loop through every control variable and make a 1D time interpolation 
-        object.
+        Loop through every control variable and make a 1D time 
+        interpolation object.
 
         Returns
         -------
