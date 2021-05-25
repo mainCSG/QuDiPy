@@ -36,14 +36,13 @@ def x(N, k):
     """
     if k == 1:
         return np.kron(PAULI_X, np.eye(2 ** (N - 1)))
-    else:
-        x_k = PAULI_I
-        for m in range(2, N + 1):
-            if k is m:
-                x_k = np.kron(x_k, PAULI_X)
-            else:
-                x_k = np.kron(x_k, PAULI_I)
-        return x_k
+    x_k = PAULI_I
+    for m in range(2, N + 1):
+        if k is m:
+            x_k = np.kron(x_k, PAULI_X)
+        else:
+            x_k = np.kron(x_k, PAULI_I)
+    return x_k
 
 
 def y(N, k):
@@ -69,14 +68,13 @@ def y(N, k):
     """
     if k == 1:
         return np.kron(PAULI_Y, np.eye(2 ** (N - 1)))
-    else: 
-        y_k = PAULI_I
-        for m in range(2, N + 1):
-            if k is m:
-                y_k = np.kron(y_k, PAULI_Y)
-            else:
-                y_k = np.kron(y_k, PAULI_I)
-        return y_k
+    y_k = PAULI_I
+    for m in range(2, N + 1):
+        if k is m:
+            y_k = np.kron(y_k, PAULI_Y)
+        else:
+            y_k = np.kron(y_k, PAULI_I)
+    return y_k
 
 
 def z(N, k):
@@ -102,14 +100,13 @@ def z(N, k):
     """
     if k == 1:
         return np.kron(PAULI_Z, np.eye(2 ** (N - 1)))
-    else:
-        z_k = PAULI_I
-        for m in range(2, N + 1):
-            if k is m:
-                z_k = np.kron(z_k, PAULI_Z)
-            else:
-                z_k = np.kron(z_k, PAULI_I)
-        return z_k
+    z_k = PAULI_I
+    for m in range(2, N + 1):
+        if k is m:
+            z_k = np.kron(z_k, PAULI_Z)
+        else:
+            z_k = np.kron(z_k, PAULI_I)
+    return z_k
 
 #ladder operators X_k ± i Y_k
 
