@@ -173,7 +173,7 @@ def load_circuit(f_name, gate_dict={}):
                 ideal_gate = q_circ.gates[gate_name].ideal_gate
                 # Check that it's a valid ideal gate keyword and that the 
                 # ideal_gate isn't None (i.e. not specified in the pulse file)
-                if not check_ideal_gate(ideal_gate) and ideal_gate != None:
+                if not check_ideal_gate(ideal_gate) and ideal_gate:
                     raise ValueError("Problem loading circuit file: " +
                                      f"{circuit_name}.\n" +
                                      f"Gate {gate_name}.ctrlp could not be loaded " +
@@ -248,7 +248,9 @@ def check_ideal_gate(gate_name, qubit_idx=[]):
         for idx in range(2,5):
             try:
                 int(gate_name[idx])
-            except:
+            except ValueError:
+                return False
+            except IndexError:
                 return False
         return True
     
