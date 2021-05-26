@@ -90,7 +90,7 @@ def project_up(rho, elem):
     
         return  np.array(projected_rho)
     
-    elif isinstance(elem, (tuple, list, set) ):
+    if isinstance(elem, (tuple, list, set) ):
         projected_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -99,10 +99,8 @@ def project_up(rho, elem):
             projected_rho = project_up(projected_rho, el)
         return projected_rho
     
-    else:
-        print("Qubits that are traced out should be defined by a single int \
-              number or an iterable of ints. Try again")
-            
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 def project_down(rho, elem):
     """
@@ -152,7 +150,7 @@ def project_down(rho, elem):
     
         return np.array(projected_rho)
     
-    elif isinstance(elem, (tuple,list,set)):
+    if isinstance(elem, (tuple,list,set)):
         projected_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -160,10 +158,9 @@ def project_down(rho, elem):
         for el in elems_sorted:
             projected_rho = project_down(projected_rho, el)
         return projected_rho
-    
-    else:
-        print("Qubits that are traced out should be defined by a single int \
-              number or a tuple of ints. Try again")
+
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 
 def partial_trace(rho, elem):
@@ -186,7 +183,7 @@ def partial_trace(rho, elem):
     if isinstance(elem, int):
         return project_up(rho, elem) + project_down(rho, elem)
     
-    elif isinstance(elem, (tuple, set, list)):
+    if isinstance(elem, (tuple, set, list)):
         traced_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -194,10 +191,10 @@ def partial_trace(rho, elem):
         for el in elems_sorted:
             traced_rho = partial_trace(traced_rho, el)
         return traced_rho
-    else:
-        #error with the input 
-        raise ValueError("Qubits that are traced out should be defined by a  \
-                         single int number or an iterable of ints. Try again")
+    
+    #error with the input 
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 def matrix_sqrt(A):
     """
