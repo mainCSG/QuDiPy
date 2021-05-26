@@ -76,16 +76,16 @@ class CSDAnalysis:
             # Create derivative of charge stability diagram
             df_der_row = self.csd.csd.diff(axis=0).fillna(0) # Replace Nans (undefined derivative) with 0s
             df_der_col = self.csd.csd.diff(axis=1).fillna(0)
-            csd_der = np.sqrt(df_der_row**2 + df_der_col**2) # to be sensitive to changes in x and y directions
+            csd_der = np.sqrt(df_der_row**2 + df_der_col**2) # sensitive to changes in x and y directions
             self.csd.csd_der = csd_der
 
         if blur_sigma is not None:
             if self.capacitances is None:
                 raise Warning("Blurring of data cannot occur when no capaciatnce are provided." 
                                 + " Data will not be changed")
-            else:
-                self.csd.csd = pd.DataFrame(gaussian_filter(self.csd.csd, blur_sigma), 
-                    columns=self.csd.v_1_values, index=self.csd.v_2_values)
+            
+            self.csd.csd = pd.DataFrame(gaussian_filter(self.csd.csd, blur_sigma), 
+                columns=self.csd.v_1_values, index=self.csd.v_2_values)
 
     def generate_bitmap(self, threshold, threshold_type='percentile', plotting=False):
         '''
@@ -300,7 +300,7 @@ class CSDAnalysis:
         else:
             raise ValueError('Unrecognized threshold type: ' + str(threshold_type))
 
-        # Go through all the elements in the accumulator, setting all the elements above the threshold to 1
+        # Go through elements in the accumulator, setting all the elements above the threshold to 1
         accumulator_threshold = np.zeros(self.accumulator.shape)
         for index, value in np.ndenumerate(self.accumulator):
             if value >= threshold:
@@ -341,7 +341,7 @@ class CSDAnalysis:
             valid charge transition line
 
         '''
-        # Get the accumulator threshold parameters and reorder as a list of pairs of indices instead of a 2D array
+        # Reorder accumulator threshold parameters as a list of pairs of indices instead of 2D array
         a = np.array(self.accumulator_threshold.nonzero())
         points_index = []
         for i in range(len(a[0])):
@@ -392,8 +392,8 @@ class CSDAnalysis:
         clf.fit(points, labels)
         centroids = clf.centroids_
 
-        # Remove the noise from the clustering if it is present (since it's label is -1 and all others are positive, 
-        # it will alwasy be the first in the list of centroids)
+        # Remove the noise from the clustering if it is present (since it's label is -1 and all others 
+        # are positive, it will alwasy be the first in the list of centroids)
         if -1 in labels:
             centroids = np.delete(centroids, 0, 0)
 
@@ -404,7 +404,7 @@ class CSDAnalysis:
 
         return valid_centroids
 
-    def __plot_heatmap(self, data, x_values, y_values, x_label, y_label, cbar=True, cbar_kws=dict()):
+    def __plot_heatmap(self, data, x_values, y_values, x_label, y_label, cbar=True, cbar_kws=None):
         '''
         Private function which formats and plots Seaborn heatmaps.
 
@@ -429,15 +429,19 @@ class CSDAnalysis:
             Whether or not to display a colobar for the heatmap (Default 
             False)
         cbar_kws: Colorbar keyword arguments to pass to plot (Default
-            empty dictionary)
+            None, initialized to empty dictionary)
         
         Returns
         -------
         None
 
         '''
-        # Casts to a dataframe if data is not already for ease of plotting
-        if type(data) != type(pd.DataFrame()):
+        # Set cbar_kws to an empty dictionary if it is None
+        if not cbar_kws:
+            cbar_kws=dict()
+
+        # Cast to a dataframe if data is not already for ease of plotting
+        if not isinstance(data, type(pd.DataFrame())):
             data = pd.DataFrame(data, index=y_values, columns=x_values)
         s = sns.heatmap(data, cbar=cbar, xticklabels=int(self.csd.num/5), 
                         yticklabels=int(self.csd.num/5), cbar_kws=cbar_kws)
@@ -470,7 +474,8 @@ class CSDAnalysis:
         # Create second axis with same x and y axis as the heatmap
         ax2 = ax.twinx().twiny()
 
-        # For each centroid, convert from polar coordiantes to slope/intercept for and plot on second axis
+        # For each centroid, convert from polar coordiantes to slope/intercept form and plot 
+        # on second axis
         x = np.linspace(self.csd.v_g1_min, self.csd.v_g1_max)
         for centroid in self.centroids:
             theta = centroid[0]
