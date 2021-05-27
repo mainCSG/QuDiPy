@@ -109,6 +109,7 @@ class CIMCSD:
                         in self.v_2_values]
 
         # Create a num by num DataFrame from occupation data information as entries
+        self.occupation = pd.DataFrame(occupation, index=self.v_1_values, columns=self.v_2_values)
 
     def calculate_energy(self, n_1, n_2, v_g1, v_g2):
         '''
@@ -178,7 +179,6 @@ class CIMCSD:
             return tuple(state)
         if state[0] < 0 and state[1] < 0:
             return (0, 0)
-        elif state[0] < 0:
+        if state[0] < 0:
             return (0, state[1])
-        else:
-            return (state[0], 0)
+        return (state[0], 0)
