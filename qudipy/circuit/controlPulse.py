@@ -28,11 +28,12 @@ class ControlPulse:
         pulse_length : int, optional
             Total length of pulse in [s]. The default is -1.
             This is an optional keyword because 
-            sometimes you may wish to vary the pulse length across different
-            simulations for a given pulse. Pulse length can be set later using
-            the set_pulse_length() method.
+            sometimes you may wish to vary the pulse length across
+            different simulations for a given pulse. Pulse length 
+            can be set later using the set_pulse_length() method.
         ideal_gate : string, optional
-            The ideal gate keyword for this control pulse. The default is None.
+            The ideal gate keyword for this control pulse. The default
+            is None.
 
         Returns
         -------
@@ -44,10 +45,9 @@ class ControlPulse:
         
         self.name = pulse_name
         self.length = pulse_length # Units are s
-        self.n_pts = 0 # Number of points in pulse (default 0), must be same amongst control variables
+        self.n_pts = 0 # Number of points in pulse (default 0), must be same amongs control variables
         
-        self.ctrl_pulses = {
-            }
+        self.ctrl_pulses = {}
         self.ctrl_names = []
         self.n_ctrls = 0
         
@@ -64,7 +64,8 @@ class ControlPulse:
         Parameters
         ----------
         time_pts : 1D float array
-            Time points where we want to obtain the interpolated pulse values.
+            Time points where we want to obtain the interpolated pulse
+            values.
 
         Returns
         -------
@@ -75,9 +76,9 @@ class ControlPulse:
         
         # Check that we actually have a valid pulse length set
         if self.length == -1:
-            print('Cannot call control pulse object.\nPulse length has not '+
-                  'been specified.\nPlease set using the .set_pulse_length()'+
-                  'method.')
+            print('Cannot call control pulse object.\nPulse length has not been specified.'
+                  + '\nPlease set using the .set_pulse_length() method.')
+                  
             return
         
         # Check if the interpolators have been constructed. If not, then 
@@ -107,21 +108,21 @@ class ControlPulse:
     
     def plot(self, plot_ctrls='all', time_int='full', n=250):
         '''
-        Plot the control pulse. Can plot a subset of the control variables 
-        and within some time interval.
+        Plot the control pulse. Can plot a subset of the control
+        variables and within some time interval.
 
         Keyword Arguments
         -----------------
         plot_ctrls : list of strings, optional
-            Specify the name of each control variable pulse you wish to plot
-            or plot 'all'. The default is 'all'.
+            Specify the name of each control variable pulse you wish
+            to plot or plot 'all'. The default is 'all'.
         time_int : list of floats
-            Specify the time interval over which to plot the pulse. Cannot be
-            less than 0 or greater than the current pulse length. The default 
-            is the full time interval.
+            Specify the time interval over which to plot the pulse.
+            Cannot be less than 0 or greater than the current pulse
+            length. The default is the full time interval.
         n : int, optional
-            Number of points to use in the pulse when plotting. The default is
-            250.
+            Number of points to use in the pulse when plotting. The 
+            default is 250.
 
         Returns
         -------
@@ -232,8 +233,9 @@ class ControlPulse:
         
     def add_control_variable(self, var_name, var_pulse):
         '''
-        Adds a control variable to the pulse. If the variable name is time,
-        then it will store the time points in the ctrl_time variable.
+        Adds a control variable to the pulse. If the variable name is
+        time, then it will store the time points in the ctrl_time
+        variable.
         
         Parameters
         ----------
