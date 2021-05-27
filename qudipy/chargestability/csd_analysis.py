@@ -53,6 +53,26 @@ class CSDAnalysis:
         self.csd.csd = pd.DataFrame(0, index=self.csd.v_1_values, columns=self.csd.v_2_values,
             dtype=np.float32)
 
+        # Attributes to be defined in later methods
+        # generate bitmap:
+        self.csd_bitmap = None
+
+        # hough transform:
+        self.accumulator = None
+        self.thetas = None
+        self.rhos = None
+
+        # threshold_hough_accumulator:
+        self.accumulator_threshold = None
+        self.db = None
+        self.centroids = None
+
+        # find_tripletpoints
+        self.m_array = None
+        self.b_array = None
+        self.line_params = None
+        self.triple_points = None
+
         # If no capacitances are provided, create a color map using the hash of the occupation
         if self.capacitances is None:
             single_occupations = [np.zeros(self.csd.n_sites) for i in range(self.csd.n_sites)]
