@@ -22,7 +22,8 @@ class HubbardCSD:
     charge stability diagrams of various designs, but can also be used 
     with analytic potentials.
     '''
-    def __init__(self, n_sites, n_e, cap_matrix, h_mu=False, h_t=False, h_u=False, param_dict=dict()):
+    def __init__(self, n_sites, n_e, cap_matrix, h_mu=False, h_t=False,
+                 h_u=False, param_dict=dict()):
         '''
 
         Parameters
@@ -58,6 +59,28 @@ class HubbardCSD:
         self.h_t = h_t
         self.h_u = h_u
 
+        # Attributes to be defined in later methods
+        # generate_csd
+        self.num = None
+        self.g1 = None
+        self.g2 = None
+        self.initial_v = None
+        self.v_g1_min = None
+        self.v_g1_max = None
+        self.v_g2_min = None
+        self.v_g2_max = None
+        self.v_1_values = None
+        self.v_2_values = None
+        self.occupation = None
+
+        #__generate_basis
+        self.sites = None
+        self.spins = None
+        self.basis_occupations = None
+        self.basis = None
+        self.basis_length = None
+        self.basis_labels = None
+
         # Set all dictonary items to variables of the object
         for key, item in param_dict.items():
             self.__setattr__(key, item)
@@ -82,7 +105,8 @@ class HubbardCSD:
         # Generates the basis to be used
         self.__generate_basis()
 
-        # These next steps generate the fixed portion of the Hamiltonian, which is created on initialization since it is independent of voltage
+        # These next steps generate the fixed portion of the Hamiltonian, which is created on 
+        # initialization since it is independent of voltage
 
         # First, generate the matrix of the correct size
         self.fixed_hamiltonian = np.zeros((len(self.basis),len(self.basis)))
@@ -117,7 +141,7 @@ class HubbardCSD:
         None
         '''
 
-        # Stores parameters for late
+        # Stores parameters for later
         self.num = num
         self.g1 = g1 - 1 #For consistent indexing
         self.g2 = g2 - 1 
@@ -207,19 +231,22 @@ class HubbardCSD:
 
         # Compute all possible occupations with the cartesian product, and then
         # remove all states that exceed the number of electron specified
+        # * 2 is for spin degeneracy (could add another * 2 for valleys)
         # TODO make this more efficient so we only generate the states we want
-        all_combos = list(itertools.product(*[[0,1] for i in range(self.n_sites * 2)])) # * 2 is for spin degeneracy (could add another * 2 for valleys)
+        all_combos = list(itertools.product(*[[0,1] for i in range(self.n_sites * 2)])) 
         basis = []
         for combo in all_combos:
             if sum(combo) <= self.n_e:
                 basis.append(list(combo))
 
-        # Labels each index in the basis state with site number and spin direction (could add valley states in future as well)
+        # Labels each index in the basis state with site number and spin direction 
+        # (could add valley states in future as well)
         self.sites = [f'site_{n+1}' for n in range(self.n_sites)]
         self.spins = ['spin_up', 'spin_down']
         basis_labels = list(itertools.product(self.sites, self.spins))
 
-        # Count number of electrons in each basis state (useful to determine occupations of states later)
+        # Count number of electrons in each basis state 
+        # (useful to determine occupations of states later)
         occupations_list = []
         for i in range(self.n_sites):
             j = 2*i
@@ -258,9 +285,11 @@ class HubbardCSD:
                     continue # No tunnel coupling between states with different charge occupation
                 
                 if sum(state_1[::2]) != sum(state_2[::2]):
-                    continue # No tunnel coupling between states with different number of spins in each orientation
+                    continue # No tunnel coupling between states with 
+                             # different number of spins in each orientation
 
-                # Go over pairs of labels, which correspond to whether particular (location, spin) are occupied
+                # Go over pairs of labels, which correspond to whether particular (location, spin) 
+                # are occupied
                 result = 0
                 # count = 0
                 for k in range(len(self.basis_labels)):
@@ -268,7 +297,7 @@ class HubbardCSD:
                         # Go over pairs of sites
                         for n in range(self.n_sites):
                                 for m in range(n):
-                                    # Add contribution to result is that tunnel coupling term exists (i.e non-zero)
+                                    # Add contribution to result if tunnel coupling term exists (i.e non-zero)
                                     if hasattr(self, 't_' + str(m+1) + str(n+1)):
                                         result += getattr(self, 't_' + str(m+1) + str(n+1)) \
                                                           * self.__inner_product(state_1, 
@@ -279,7 +308,7 @@ class HubbardCSD:
 
                 h_t[i][j] = -result
                 
-        h_t += h_t.conj().T #Since matrix is symmetric
+        h_t += h_t.conj().T # Since matrix is symmetric
         return h_t
 
     def __generate_h_u(self):
@@ -302,16 +331,19 @@ class HubbardCSD:
         # Go over all states (but not pairs since H_U is diagonal)
         for i in range(self.fixed_hamiltonian.shape[0]):
                 state_1 = self.basis[i]
-                # Go over pairs of labels, which correspond to whether particular (location, spin) are occupied
+                # Go over pairs of labels, which correspond to whether particular 
+                # (location, spin) are occupied
                 result = 0
                 for k in range(len(self.basis_labels)):
                     for l in range(k):
-                        # Then, go over over all site pairs of sites and add their contribution if it is present
+                        # Go over over pairs of sites and add their contribution if it is present
                         for j in range(self.n_sites):
                             for m in range(j+1): # j+1 to get same site repulsion
                                 if self.basis_labels[k][0] == 'site_' + str(j+1) \
                                     and self.basis_labels[l][0] == 'site_' + str(m+1):
-                                    if hasattr(self, 'U_' + str(m+1) + str(j+1)): # Check if inter-dot coupling is set between these two sites, skipping if is not
+                                    # Check if inter-dot coupling is set between these two sites, 
+                                    # skipping if is not
+                                    if hasattr(self, 'U_' + str(m+1) + str(j+1)): 
                                         result += getattr(self, 'U_' + str(m+1) + str(j+1)) \
                                             * self.__inner_product(state_1, 
                                             self.__number(self.__number(state_1, k), l))
@@ -354,7 +386,9 @@ class HubbardCSD:
         -------
         Either 0 or 1, depending on the inner product
         '''
-        if state_1 is None or state_2 is None: # Deals with cases where the coefficient of state is 0, so the inner product is multiplied by 0
+
+        # Deals with cases where the coefficient of state is 0, so inner product is multiplied by 0
+        if state_1 is None or state_2 is None: 
             return 0
         elif state_1 == state_2:
             return 1
