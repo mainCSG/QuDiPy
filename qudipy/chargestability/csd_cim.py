@@ -66,6 +66,16 @@ class CIMCSD:
         # Electrostatic coupling energy
         self.e_cm = consts.e**2 * self.c_m / (self.c_1 * self.c_2 - self.c_m**2)
 
+        # Attributes to be defined in later methods
+        # generate_csd:
+        self.num = None
+        self.v_g1_min = None
+        self.v_g1_max = None
+        self.v_g2_min = None
+        self.v_g2_max = None
+        self.v_1_values = None
+        self.v_2_values = None
+
     def generate_csd(self, v_g1_max, v_g2_max, v_g1_min=0, v_g2_min=0, num=100):
         ''' 
         Generates the charge stability diagram between v_g1(2)_min and
