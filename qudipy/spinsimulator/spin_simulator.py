@@ -479,8 +479,8 @@ class SpinSys:
                 J = []
                 J_dict = {int(k[2:]):v for (k,v) in pulse_params.items() 
                          if k[:2]=="J_"}
-                for i in range(N-1):
-                    J.append(J_dict.get(i+1, 0))
+                for j in range(N-1):
+                    J.append(J_dict.get(j+1, 0))
             
             #Incorporating values of B_rf
                     
@@ -679,68 +679,67 @@ class SpinSys:
                 if not dim_correct:
                     raise ValueError("Inconsistent dimensions of the pulse "
                                      "entry. Please try again")
-        
-                else:
-                    tran = tqdm.tqdm(range(num_values))
-                    #range starts with 0 for a proper display of progress bar
-                    for n in tran:
-                        #progress bar
-                        tran.set_description(pulse.name + ", step %i" % (n+1))
-                        if n != 0:   
-                            #Runge-Kutta method
-                            prev_pulse = {k:v[n-1] for (k,v) 
-                                           in pulse.ctrl_pulses.items()}
-                            cur_pulse={k:v[n] for (k,v) 
-                                           in pulse.ctrl_pulses.items()}
-                            avg_pulse={k:(0.5 * (v[n-1]+v[n])) for (k,v) 
-                                           in pulse.ctrl_pulses.items()}
-                            
-                            K1 = self.lindbladian(self.rho, cdict_N, prev_pulse)
-                            K2 = self.lindbladian(self.rho + 0.5 * delta_t * K1, 
-                                                      cdict_N, avg_pulse )
-                            K3 = self.lindbladian(self.rho + 0.5 * delta_t * K2, 
-                                                      cdict_N, avg_pulse )
-                            K4 = self.lindbladian(self.rho + delta_t * K3, 
-                                                      cdict_N, cur_pulse)
-                            #updating density matrix
-                            
-                            self.rho = self.rho + delta_t/6 * (K1 + 2 * K2 + 
-                                                                  2 * K3 + K4)
-                #______________________________________________________________
-                            # defining when to write values of fidelity, etc.
-                            
-                            # the following formulas are correct for the case
-                            # track_points_per_pulse > 3
-                            if (num_values - 1) % (track_points_per_pulse - 1) == 0:
-                                track_step = max(int((num_values - 1) /  
-                                                  (track_points_per_pulse - 1)), 1)
-                            else:
-                                track_step = max(int((num_values-1) /  
-                                                  (track_points_per_pulse - 2)), 1)
-                            
-                            #writing values in the output dictionary
-                            if n % track_step == 0 or n == num_values-1:
-                                #update time point
-                                retdict["time"].append(self.time + n * delta_t)
-              
-                                #implementing tracking:
-                                if track_qubits is not None:
-                                    for key in track_keys:
-                                        retdict[key].append(self.track_subsystem( 
-                                            track_qubits, eval_Bloch_vectors)[key])  
-                                if eval_fidelity and rho_reference is not None:    
-                                    retdict["fidelity"].append(
-                                        qmath.fidelity(self.rho, rho_ref))
-                                if eval_purity:
-                                    retdict["purity"].append(qmath.purity(self.rho))
+               
+                tran = tqdm.tqdm(range(num_values))
+                #range starts with 0 for a proper display of progress bar
+                for n in tran:
+                    #progress bar
+                    tran.set_description(pulse.name + ", step %i" % (n+1))
+                    if n != 0:   
+                        #Runge-Kutta method
+                        prev_pulse = {k:v[n-1] for (k,v) 
+                                        in pulse.ctrl_pulses.items()}
+                        cur_pulse={k:v[n] for (k,v) 
+                                        in pulse.ctrl_pulses.items()}
+                        avg_pulse={k:(0.5 * (v[n-1]+v[n])) for (k,v) 
+                                        in pulse.ctrl_pulses.items()}
+                        
+                        K1 = self.lindbladian(self.rho, cdict_N, prev_pulse)
+                        K2 = self.lindbladian(self.rho + 0.5 * delta_t * K1, 
+                                                    cdict_N, avg_pulse )
+                        K3 = self.lindbladian(self.rho + 0.5 * delta_t * K2, 
+                                                    cdict_N, avg_pulse )
+                        K4 = self.lindbladian(self.rho + delta_t * K3, 
+                                                    cdict_N, cur_pulse)
+                        #updating density matrix
+                        
+                        self.rho = self.rho + delta_t/6 * (K1 + 2 * K2 + 
+                                                                2 * K3 + K4)
+            #______________________________________________________________
+                        # defining when to write values of fidelity, etc.
+                        
+                        # the following formulas are correct for the case
+                        # track_points_per_pulse > 3
+                        if (num_values - 1) % (track_points_per_pulse - 1) == 0:
+                            track_step = max(int((num_values - 1) /  
+                                                (track_points_per_pulse - 1)), 1)
+                        else:
+                            track_step = max(int((num_values-1) /  
+                                                (track_points_per_pulse - 2)), 1)
+                        
+                        #writing values in the output dictionary
+                        if n % track_step == 0 or n == num_values-1:
+                            #update time point
+                            retdict["time"].append(self.time + n * delta_t)
+            
+                            #implementing tracking:
+                            if track_qubits is not None:
+                                for key in track_keys:
+                                    retdict[key].append(self.track_subsystem( 
+                                        track_qubits, eval_Bloch_vectors)[key])  
+                            if eval_fidelity and rho_reference is not None:    
+                                retdict["fidelity"].append(
+                                    qmath.fidelity(self.rho, rho_ref))
+                            if eval_purity:
+                                retdict["purity"].append(qmath.purity(self.rho))
             
                 #updating the time attribute after the pulse
                 self.time += pulse_length
                 
             #recursive call of pulses embedded in the "pulse" iterable
             elif (isinstance(pulse, (list,tuple))):
-                for p in pulse:
-                    __nested_evolve(p, retdict)
+                for pulse_val in pulse:
+                    __nested_evolve(pulse_val, retdict)
             
             else:
                 raise ValueError("The pulse input format is incorrect."
@@ -796,23 +795,23 @@ class SpinSys:
             raise ValueError("The tracked qubits should be properly specified"  
                              "by an int or an iterable of ints. None of the"  
                                  "qubits has been tracked")
-        else:
-            if ifint:
-                trqub = {track_qubits}
-            if ifiterable :
-                trqub = set(track_qubits) 
+       
+        if ifint:
+            trqub = {track_qubits}
+        if ifiterable :
+            trqub = set(track_qubits) 
 
-            for qub in trqub:
-                submatrix = qmath.partial_trace(self.rho, (Nset-{qub}))
-                subm = "submatrix_{}".format(qub)
-                ret_dict[subm] = submatrix
-                if eval_Bloch_vectors:
-                    ret_dict["sigma_x_{}".format(qub)] = np.trace(submatrix 
-                                                                @ matr.PAULI_X)
-                    ret_dict["sigma_y_{}".format(qub)] = np.trace(submatrix 
-                                                                @ matr.PAULI_Y)
-                    ret_dict["sigma_z_{}".format(qub)] = np.trace(submatrix 
-                                                                @ matr.PAULI_Z)
+        for qub in trqub:
+            submatrix = qmath.partial_trace(self.rho, (Nset-{qub}))
+            subm = "submatrix_{}".format(qub)
+            ret_dict[subm] = submatrix
+            if eval_Bloch_vectors:
+                ret_dict["sigma_x_{}".format(qub)] = np.trace(submatrix 
+                                                            @ matr.PAULI_X)
+                ret_dict["sigma_y_{}".format(qub)] = np.trace(submatrix 
+                                                            @ matr.PAULI_Y)
+                ret_dict["sigma_z_{}".format(qub)] = np.trace(submatrix 
+                                                            @ matr.PAULI_Z)
                 
         return ret_dict
             
