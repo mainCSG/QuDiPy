@@ -229,8 +229,8 @@ def load_potentials(ctrl_vals, ctrl_names, f_type='pot', f_dir=None,
             
             # Get new coordinate points by rounding number of coordinates 
             # points to a power of 2 for both x and y (for faster ffts).
-            new_x_len = 1 if len(new_x) == 0 else 2**(len(new_x) - 1).bit_length()
-            new_y_len = 1 if len(new_y) == 0 else 2**(len(new_y) - 1).bit_length()
+            new_x_len = 2**(len(new_x) - 1).bit_length() if new_x else 1
+            new_y_len = 2**(len(new_y) - 1).bit_length() if new_y else 1
             new_x = np.linspace(new_x.min(), new_x.max(), new_x_len)
             new_y = np.linspace(new_y.min(), new_y.max(), new_y_len)
             
@@ -257,7 +257,7 @@ def analytical_potential(ctrl_vals, ctrl_names, function, x_range, y_range):
     '''
     Allows one to create an analytical potential in the xy-plane from a
     function
-    
+
     Parameters
     ----------
     ctrl_vals : list of list of floats
