@@ -204,7 +204,7 @@ def load_circuit(f_name, gate_dict=None):
     
     return q_circ    
     
-def check_ideal_gate(gate_name, qubit_idx=[]):
+def check_ideal_gate(gate_name, qubit_idx=None):
     '''
     This function checks if the supplied gate_name is a valid ideal gate
     keyword used to simulate an ideal quantum circuit. 
@@ -227,6 +227,10 @@ def check_ideal_gate(gate_name, qubit_idx=[]):
     boolean
 
     '''
+
+    # If qubit_idx was not passed to function, assign an empty list
+    if not qubit_idx:
+        qubit_idx = []
     
     # If gate name is None type then that means there was no ideal gate line
     # specified in the corresponding pulse file
