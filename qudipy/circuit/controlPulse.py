@@ -79,8 +79,9 @@ class ControlPulse:
         
         # Check that we actually have a valid pulse length set
         if self.length == -1:
-            raise ValueError ('Cannot call control pulse object.\nPulse length has not been specified.'\
+            print('Cannot call control pulse object.\nPulse length has not been specified.'\
                             + '\nPlease set using the .set_pulse_length() method.')
+            return None
         
         # Check if the interpolators have been constructed. If not, then 
         # make them.
