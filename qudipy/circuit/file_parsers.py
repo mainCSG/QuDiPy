@@ -101,7 +101,7 @@ def load_pulses(f_names):
         
     return pulse_dict
       
-def load_circuit(f_name, gate_dict={}):
+def load_circuit(f_name, gate_dict=None):
     '''
     This function takes in a single quantum circuit .qcirc file as input and 
     constructs a quantum circuit object
@@ -124,7 +124,10 @@ def load_circuit(f_name, gate_dict={}):
         simulation.
 
     '''
-    
+    # If a dictionary was not passed to the function, assign gate_dict as an empty dictionary
+    if not gate_dict:
+        gate_dict = {}
+
     # Check file extension
     if f_name[-6::] != ".qcirc":
         raise ValueError("Unrecognized quantum circuit file type..." +
