@@ -45,15 +45,18 @@ class ControlPulse:
         
         self.name = pulse_name
         self.length = pulse_length # Units are s
-        self.n_pts = 0 # Number of points in pulse (default 0), must be same amongs control variables
+        self.n_pts = 0 # Number of points in pulse (default 0), must be same among control variables
         
         self.ctrl_pulses = {}
         self.ctrl_names = []
         self.n_ctrls = 0
         
         self.ideal_gate = ideal_gate
-        
+       
         self.ctrl_time = None
+
+        # Attribute to be initialized later in _generate_ctrl_interpolators
+        self.ctrl_interps = None
         
         
     def __call__(self, time_pts):
@@ -76,10 +79,8 @@ class ControlPulse:
         
         # Check that we actually have a valid pulse length set
         if self.length == -1:
-            print('Cannot call control pulse object.\nPulse length has not been specified.'
-                  + '\nPlease set using the .set_pulse_length() method.')
-                  
-            return
+            raise ValueError ('Cannot call control pulse object.\nPulse length has not been specified.'\
+                            + '\nPlease set using the .set_pulse_length() method.')
         
         # Check if the interpolators have been constructed. If not, then 
         # make them.
