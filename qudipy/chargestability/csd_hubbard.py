@@ -23,7 +23,7 @@ class HubbardCSD:
     with analytic potentials.
     '''
     def __init__(self, n_sites, n_e, cap_matrix, h_mu=False, h_t=False,
-                 h_u=False, param_dict=dict()):
+                 h_u=False, param_dict=None):
         '''
 
         Parameters
@@ -60,7 +60,7 @@ class HubbardCSD:
         self.h_u = h_u
 
         # Attributes to be defined in later methods
-        # generate_csd
+        # generate_csd:
         self.num = None
         self.g1 = None
         self.g2 = None
@@ -73,13 +73,17 @@ class HubbardCSD:
         self.v_2_values = None
         self.occupation = None
 
-        #__generate_basis
+        # __generate_basis:
         self.sites = None
         self.spins = None
         self.basis_occupations = None
         self.basis = None
         self.basis_length = None
         self.basis_labels = None
+
+        # If dictionary was not passed into function, create an empty dictionary
+        if not param_dict:
+            param_dict = dict()
 
         # Set all dictonary items to variables of the object
         for key, item in param_dict.items():
@@ -390,10 +394,9 @@ class HubbardCSD:
         # Deals with cases where the coefficient of state is 0, so inner product is multiplied by 0
         if state_1 is None or state_2 is None: 
             return 0
-        elif state_1 == state_2:
+        if state_1 == state_2:
             return 1
-        else:
-            return 0
+        return 0
 
     def __create(self, state, position):
         '''
