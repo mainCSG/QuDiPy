@@ -114,7 +114,8 @@ class CSDAnalysis:
 
         Parameters
         ----------
-        # TODO update this to be a single description and confirm int is the correct type
+        # TODO update this to be a single description and confirm int 
+        # is the correct type
         threshold: int
             threshold which determines whether bit is considered 'on' 
             or 'off'
@@ -127,15 +128,15 @@ class CSDAnalysis:
         threshold_type: string
             Flag for which type of thresholding to do (default 
             'percentile')
-            -   'percentile': will set all elements in the array above the
-                set percentile to 1 and all those below to 0, ignoring NaN 
-                values 
+            -   'percentile': will set all elements in the array above 
+                the set percentile to 1 and all those below to 0,
+                ignoring NaN values 
                 e.g with threshold=99, only elements above the 99th 
                 percentile will be set to 1
             -   'absolute': will set all elements in the array above the 
                 specified value to 1 and all those below to 0 
-                e.g with threshold=20, only elements whos is value greater 
-                or equal 20 will be set to 1
+                e.g with threshold=20, only elements whos is value 
+                greater or equal 20 will be set to 1
         plotting: bool
             Flag which determines whether or not to plot the resulting
             thresholded Hough accumulator (default False)
@@ -412,7 +413,7 @@ class CSDAnalysis:
         clf.fit(points, labels)
         centroids = clf.centroids_
 
-        # Remove the noise from the clustering if it is present (since it's label is -1 and all others 
+        # Remove noise from the clustering if it is present (since it's label is -1 and all others 
         # are positive, it will alwasy be the first in the list of centroids)
         if -1 in labels:
             centroids = np.delete(centroids, 0, 0)
