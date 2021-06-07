@@ -92,9 +92,9 @@ def rot_square(qubits, N, axis, theta, B_0, B_rf, f_rf=None,
         elif ifint:
             set_qubits = {qubits}
         else:
-            raise ValueError("The tracked qubits should be specified"  
-                             "by an int or an iterable of ints. None of the"  
-                                 "qubits have been detuned to idle")
+            raise ValueError("The tracked qubits should be specified " +  
+                             "by an int or an iterable of ints. None of the " +  
+                             "qubits have been detuned to idle")
         
         # tuning the target qubit(s) on resonance, the variables are named in 
         # compliance with the write-up
@@ -132,7 +132,7 @@ def rot_square(qubits, N, axis, theta, B_0, B_rf, f_rf=None,
                 
         return rotpulse
         #del rotpulse
-    elif axis=="Z":
+    if axis=="Z":
         return [rot_square(qubits, N, "X", -90, B_0, B_rf, 
                                                    f_rf, delta_g, num_val), 
                 rot_square(qubits, N, "Y", theta, B_0, B_rf,
