@@ -120,8 +120,8 @@ def load_circuit(f_name, gate_dict=None):
     Returns
     -------
     q_circ : QuantumCircuit object
-        Class containing information loaded from the .qcirc file required for
-        simulation.
+        Class containing information loaded from the .qcirc file 
+        required for simulation.
 
     '''
     # If a dictionary was not passed to the function, assign gate_dict as an empty dictionary
@@ -162,7 +162,7 @@ def load_circuit(f_name, gate_dict=None):
                                  f"{circuit_name}.\n" +
                                  f"Gate {gate_name} could not be loaded as " +
                                  "the corresponding pulse was not loaded or " + 
-                                 " is not the gate name a ideal gate keyword.\n" +
+                                 "is not the gate name a ideal gate keyword.\n" +
                                  "Check .qcirc file for typos or load the " +
                                  "corresponding pulse file.")
             
@@ -238,7 +238,7 @@ def check_ideal_gate(gate_name, qubit_idx=None):
     if gate_name == None or len(gate_name) not in [1,4,5]:
         return False
     
-    # Check for a R gate first
+    # Check for an R gate first
     if gate_name[0] == "R" and gate_name[1] in ["X","Y","Z"]:
         # Now check that the next three characters are ints
         for idx in range(2,5):
@@ -248,7 +248,7 @@ def check_ideal_gate(gate_name, qubit_idx=None):
                 return False
         return True
     
-    # Check I, H, and CTRL gates, and (if CTRL or RSWAP gate), check qubit number (must be an even number of used qubits)
+    # Check I, H, and CTRL gates, and (if CTRL, SWAP, or RSWAP gate), check qubit number (must be an even number of used qubits)
     if gate_name in ("I", "H") \
             or (len(gate_name) == 5 \
             and gate_name[:4] == "CTRL" \
