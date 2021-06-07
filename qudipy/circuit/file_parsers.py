@@ -137,7 +137,7 @@ def load_circuit(f_name, gate_dict=None):
     f = open(f_name, "r")
     circuit_name = os.path.basename(f.name).split('.')[0]
 
-    # Loop over every gate in the circuit file.
+    # Loop over every gate in the circuit file
     for x in f:
         # Parse line by line
         if "Number of qubits:" in x:
@@ -234,20 +234,9 @@ def check_ideal_gate(gate_name, qubit_idx=None):
     
     # If gate name is None type then that means there was no ideal gate line
     # specified in the corresponding pulse file
-    if gate_name is None:
-        return False    
-    
-    # Quick check by looking at gate name length
-    if len(gate_name) not in [1,4,5]:
+    # Also, quick check by looking at gate name length
+    if gate_name == None or len(gate_name) not in [1,4,5]:
         return False
-    
-    # Check I gate:
-    if gate_name == "I":
-        return True
-    
-    # Check H gate
-    if gate_name == "H":
-        return True
     
     # Check for a R gate first
     if gate_name[0] == "R" and gate_name[1] in ["X","Y","Z"]:
@@ -255,23 +244,18 @@ def check_ideal_gate(gate_name, qubit_idx=None):
         for idx in range(2,5):
             try:
                 int(gate_name[idx])
-            except ValueError:
-                return False
-            except IndexError:
+            except (ValueError, IndexError):
                 return False
         return True
     
-    # Check CTRL gates
-    if gate_name[:4] == "CTRL" and gate_name[4] in ["Z","X","Y"]:
-        # Now check qubit number, must be an even number of used qubits
-        if np.mod(len(qubit_idx),2) == 0:
-            return True
-    
-    # Check SWAP and RSWAP
-    if gate_name in ("SWAP", "RSWAP"):
-        # Now check qubit number, must be an even number of used qubits
-        if np.mod(len(qubit_idx),2) == 0:
-            return True
+    # Check I, H, and CTRL gates, and (if CTRL or RSWAP gate), check qubit number (must be an even number of used qubits)
+    if gate_name in ("I", "H") \
+            or (len(gate_name) == 5 \
+            and gate_name[:4] == "CTRL" \
+            and gate_name[4] in ["Z","X","Y"] \
+            or gate_name in ("SWAP", "RSWAP")) \
+            and np.mod(len(qubit_idx),2) == 0:
+        return True
     
     # Otherwise
     return False
