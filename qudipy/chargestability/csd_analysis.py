@@ -103,9 +103,9 @@ class CSDAnalysis:
             if self.capacitances is None:
                 raise Warning("Blurring of data cannot occur when no capaciatnce are provided." 
                                 + " Data will not be changed")
-            
-            self.csd.csd = pd.DataFrame(gaussian_filter(self.csd.csd, blur_sigma), 
-                columns=self.csd.v_1_values, index=self.csd.v_2_values)
+            else:
+                self.csd.csd = pd.DataFrame(gaussian_filter(self.csd.csd, blur_sigma),
+                    columns=self.csd.v_1_values, index=self.csd.v_2_values)
 
     def generate_bitmap(self, threshold, threshold_type='percentile', plotting=False):
         '''
@@ -114,13 +114,9 @@ class CSDAnalysis:
 
         Parameters
         ----------
-        # TODO update this to be a single description and confirm int 
-        # is the correct type
-        threshold: int
-            threshold which determines whether bit is considered 'on' 
-            or 'off'
-        threshold: int 
-            Specifies the threshold. Behaves differently depending 
+        threshold: float
+            Specifies the threshold, which determines whether bit is 
+            considered 'on' or 'off'. Behaves differently depending 
             on threshold_type
 
         Keyword Arguments
@@ -216,12 +212,11 @@ class CSDAnalysis:
 
         Returns
         -------
-        Accumulator: 2D array
-            # TODO finish this sentence below
-            Counts of each theta and 
-        thetas: <type>
+        Accumulator: 2D numpy array
+            Counts in each bin for a particular value of theta and rho 
+        thetas: 1D numpy array
             Values of theta for which accumulator swept over
-        rhos: <type>
+        rhos: 1D numpy array
             Values of distance for which accumulator swept over
 
         '''
@@ -267,10 +262,10 @@ class CSDAnalysis:
 
         if plotting is True:
             # Round data to avoid ridiculously long tick markers
-            rhos = np.round(self.rhos, 6)
-            thetas = np.round(self.thetas, 6)
+            rhos = np.round(rhos, 6)
+            thetas = np.round(thetas, 6)
             # Call heatmap plotting function
-            self.__plot_heatmap(self.accumulator, thetas, rhos, r'$\theta$ (rad)', r'$\rho$ (V)')
+            self.__plot_heatmap(accumulator, thetas, rhos, r'$\theta$ (rad)', r'$\rho$ (V)')
 
         return accumulator, thetas, rhos
 
@@ -283,7 +278,6 @@ class CSDAnalysis:
 
         Parameters
         ----------
-        # TODO confirm type is float
         threshold: float  
             Specifies the threshold. Behaves differently depending on
             threshold_type

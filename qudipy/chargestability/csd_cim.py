@@ -23,16 +23,15 @@ class CIMCSD:
          
         Parameters
         ----------
-        # TODO confirm these parameters are double
-        c_l: double
+        c_l: float
             Capacitance between the left resevoir and dot 1
-        c_r: double
+        c_r: float
             Capacitance between the right resevoir dot 2
-        c_m: double
+        c_m: float
             Capacitance between dot 1 and 2
-        c_g1: double
+        c_g1: float
             Capacitance between gate 1 and dot 1
-        c_g2: double 
+        c_g2: float 
             Capacitance between gate 2 and dot 2
 
         Returns
@@ -40,7 +39,7 @@ class CIMCSD:
         None
 
         '''
-        # TODO generatlize this number
+        # TODO generalize this number
         self.n_sites = 2
         
         # Capacitances between dots and resevoirs
@@ -81,8 +80,6 @@ class CIMCSD:
         Generates the charge stability diagram between v_g1(2)_min and
         v_g1(2)_max with num by num data points in 2D
 
-        # TODO confirm the types of the parameters and keywords
-        Parameters
         ----------
         v_g1_max: float
             maximum voltage on plunger gate 1
@@ -127,8 +124,6 @@ class CIMCSD:
         voltages v_g1, v_g2. Dependent on c_l, c_r, c_m, c_g1 and c_g2 
         defined when object is initialized.
 
-        # TODO confirm the types of the parameters and keywords
-        Parameters
         ----------
         n_1: int
             Occupation on dot 1
@@ -157,8 +152,6 @@ class CIMCSD:
         gate voltages v_g1, v_g2. Dependent on c_l, c_r, c_m, c_g1
         and c_g2 defined when object is initialized.
 
-        # TODO confirm the types of the parameters and keywords
-        Parameters
         ----------
         v_g1: float
             voltage on plunger gate 1
