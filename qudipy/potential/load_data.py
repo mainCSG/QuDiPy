@@ -114,7 +114,8 @@ def load_potentials(ctrl_vals, ctrl_names, f_type='pot', f_dir=None,
     control names given in ctrl_names. The potential files MUST be 2D
     potential slices (if you have 3D nextnano simulations, you must 
     preprocess them first). Potential files are assumed to follow the
-    syntax:'TYPE_C1NAME_C1VAL_C2NAME_C2VAL_..._CNNAME_CNVAL.txt'
+    syntax:
+    'TYPE_C1NAME_C1VAL_C2NAME_C2VAL_..._CNNAME_CNVAL.txt'
     where TYPE = 'Uxy' or 'Ez'. 
     Refer to tutorial for a more explicit example.
     
