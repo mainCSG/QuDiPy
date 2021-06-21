@@ -93,10 +93,11 @@ class CSDAnalysis:
                 for j in self.csd.v_1_values:
                     self.csd.csd[i][j] = np.sum(self.capacitances * self.csd.occupation[i][j][0])
 
-            # Create derivative of charge stability diagram
-            df_der_row = self.csd.csd.diff(axis=0).fillna(0) # Replace Nans (undefined derivative) with 0s
+            # Create derivative of charge stability diagram 
+            # Replace Nans (undefined derivative) with 0s
+            df_der_row = self.csd.csd.diff(axis=0).fillna(0) 
             df_der_col = self.csd.csd.diff(axis=1).fillna(0)
-            csd_der = np.sqrt(df_der_row**2 + df_der_col**2) # sensitive to changes in x and y directions
+            csd_der = np.sqrt(df_der_row**2 + df_der_col**2) # sensitive to changes in x and y
             self.csd.csd_der = csd_der
 
         if blur_sigma is not None:
@@ -206,19 +207,24 @@ class CSDAnalysis:
 
         Keyword Arguments
         -----------------
-        num_thetas: number of angle points to sweep over (default 180)
-        theta_min: smallest angle (in degrees) to start the sweep from, 
+        #TODO confirm types
+        num_thetas: int
+            number of angle points to sweep over (default 180)
+        theta_min: float
+            smallest angle (in degrees) to start the sweep from, 
             which should not be smaller than -90 (default -90)
-        theta_max: largest angle (in degrees) to sweep to, which should
+        theta_max: float
+            largest angle (in degrees) to sweep to, which should
             not be greater than 90 (default 90)
-        plotting: flag which determines whether to plot the resulting
+        plotting: bool
+            flag which determines whether to plot the resulting
             Hough accumulator (default False)
 
         Returns
         -------
-        Accumulator: 2D array
-            # TODO finish this sentence below
-            Counts of each theta and 
+        # TODO finish the description for 
+        Accumulator: 2D array of <type>
+            Counts of each theta and [rho?]
         thetas: <type>
             Values of theta for which accumulator swept over
         rhos: <type>
@@ -230,6 +236,8 @@ class CSDAnalysis:
         
         # Rho and Theta ranges
         thetas = np.deg2rad(np.linspace(theta_min, theta_max, num=num_thetas))
+        #TODO review the following 3 lines of code -- seems they are repeated below\
+        #but only the variables created in the second block of code are used
         width = img.columns[-1]
         height = img.index[-1]
         diag_len = np.sqrt(width ** 2 + height ** 2)
@@ -244,7 +252,7 @@ class CSDAnalysis:
 
         # Hough accumulator array of theta vs rho
         accumulator = np.zeros((2 * index_diag_len, num_thetas), dtype=np.uint64)
-        y_idxs, x_idxs = np.nonzero(img.to_numpy())
+        y_idxs, x_idxs = np.nonzero(img.to_numpy()) # indices of y and x
 
         # Vote in the hough accumulator
         for i in range(len(x_idxs)):
@@ -255,6 +263,7 @@ class CSDAnalysis:
             y = img.index[y_index]
 
             for t_idx in range(num_thetas):
+                # Multiply x and y by corresponding cos and sin theta, respectively, to determine rho
                 rho = x * cos_t[t_idx] + y * sin_t[t_idx]
                 # Find index of the nearest value in rhos to rho, and add vote there
                 rho_index = (np.abs(rhos - rho)).argmin()
@@ -283,8 +292,8 @@ class CSDAnalysis:
 
         Parameters
         ----------
-        # TODO confirm type is float
-        threshold: float  
+        # TODO confirm type is int
+        threshold: int 
             Specifies the threshold. Behaves differently depending on
             threshold_type
 
@@ -307,7 +316,9 @@ class CSDAnalysis:
 
         Returns
         -------
-        accumulator_threshold: 2D array with counts 
+        accumulator_threshold: 2D numpy array 
+            Array with counts (either 0 or 1), each corresponding to 
+            elements in self.accumulator
 
         '''
         if threshold_type.lower() == 'percentile':
@@ -345,20 +356,25 @@ class CSDAnalysis:
 
         Parameters
         ----------
-        eps: maximum distance for points to be considered in the local
+        #TODO confirm types
+        eps: float
+            maximum distance for points to be considered in the local
             neighbourhood of each other
-        min_samples: minimum number of samples within the local
+        min_samples: int
+            minimum number of samples within the local
             neighbourhood in order for the point to be considered 
             a core part of the cluster
 
         Keyword Arguments
         -----------------
-        potting: boolean flag which sets whether or not to plot the
+        plotting: bool
+            boolean flag which sets whether or not to plot the
             results of clustering (default False)
         
         Returns
         -------
-        centroids: numpy array of pairs [theta, rhos] corresponding to 
+        centroids: numpy array of <type>
+            numpy array of pairs [theta, rhos] corresponding to 
             valid charge transition line
 
         '''
@@ -414,7 +430,7 @@ class CSDAnalysis:
         centroids = clf.centroids_
 
         # Remove noise from the clustering if it is present (since it's label is -1 and all others 
-        # are positive, it will alwasy be the first in the list of centroids)
+        # are positive, it will always be the first in the list of centroids)
         if -1 in labels:
             centroids = np.delete(centroids, 0, 0)
 
