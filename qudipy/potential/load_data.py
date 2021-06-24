@@ -13,7 +13,7 @@ from itertools import product
 
 import qudipy as qd
 from qudipy.potential import GridParameters
-from qudipy.potential.potentialinterpolator import PotentialInterpolator
+from qudipy.potential.potential_interpolator import PotentialInterpolator
         
 def build_interpolator(load_data_dict, constants=qd.Constants(), 
                        y_slice=None):
