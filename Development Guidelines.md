@@ -101,7 +101,7 @@ var_ret: type
 		    (y_temp < self.csd.v_g2_min) or (y_temp > self.csd.v_g2_max)
 		```
 
-		**Note**: The line should end with the conditional operator (ie not/and/or) followed by a backslash '\' character and the subsequent line should begin with the conditional statement, indented by four spaces
+		**Note**: The line should end with the conditional operator (ie not/and/or) followed by a backslash character and the subsequent line should begin with the conditional statement, indented by four spaces
 
 12. Naming should follow the following conventions (terminology consistent with: https://www.python.org/dev/peps/pep-0008/#id34):
 	* **Module names** should be lowercase (with no spaces)
