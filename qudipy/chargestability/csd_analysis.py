@@ -258,7 +258,7 @@ class CSDAnalysis:
             y = img.index[y_index]
 
             for t_idx in range(num_thetas):
-                # Multiply x and y by corresponding cos and sin theta, respectively, to determine rho
+                # Multiply x and y by corresponding cos and sin theta to determine rho
                 rho = x * cos_t[t_idx] + y * sin_t[t_idx]
                 # Find index of the nearest value in rhos to rho, and add vote there
                 rho_index = (np.abs(rhos - rho)).argmin()
