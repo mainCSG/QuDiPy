@@ -207,7 +207,7 @@ def solve_many_elec_SE(gparams, n_elec, n_xy_ho, n_se, n_sols=4,
         DESCRIPTION.
     n_sols : TYPE, optional
         DESCRIPTION. The default is 4.
-    consts : TYPE, optiona
+    consts : TYPE, optional
         DESCRIPTION. The default is "vacuum".
     optimize_omega : TYPE, optional
         DESCRIPTION. The default is True.
