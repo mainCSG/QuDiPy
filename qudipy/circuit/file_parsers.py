@@ -248,7 +248,8 @@ def check_ideal_gate(gate_name, qubit_idx=None):
                 return False
         return True
     
-    # Check I, H, and CTRL gates, and (if CTRL, SWAP, or RSWAP gate), check qubit number (must be an even number of used qubits)
+    # Check I, H, and CTRL gates, and (if CTRL, SWAP, or RSWAP gate)
+    # check qubit number (must be an even number of used qubits)
     if gate_name in ("I", "H") \
             or (len(gate_name) == 5 \
             and gate_name[:4] == "CTRL" \
