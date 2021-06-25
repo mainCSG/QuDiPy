@@ -74,6 +74,7 @@ class CIMCSD:
         self.v_g2_max = None
         self.v_1_values = None
         self.v_2_values = None
+        self.occupation = None
 
     def generate_csd(self, v_g1_max, v_g2_max, v_g1_min=0, v_g2_min=0, num=100):
         ''' 
