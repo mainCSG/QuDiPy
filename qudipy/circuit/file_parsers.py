@@ -6,8 +6,8 @@ Functions for handling control pulse files .ctrlp
 import os
 import pandas as pd
 import numpy as np
-from .quantumCircuit import QuantumCircuit
-from .controlPulse import ControlPulse
+from .quantum_circuit import QuantumCircuit
+from .control_pulse import ControlPulse
 
 def _load_one_pulse(f_name):
     '''
