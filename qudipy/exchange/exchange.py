@@ -402,35 +402,35 @@ def find_H_unitary_transformation(gparams, new_basis,
         
 def __calc_origin_CME(na, ma, nb, mb, ng, mg, nd, md, rydberg=False):
     '''
-    Assumes SI units
+    Helper function for calculating Coulomb Matrix Elements
 
     Parameters
     ----------
-    na : TYPE
-        DESCRIPTION.
-    ma : TYPE
-        DESCRIPTION.
-    nb : TYPE
-        DESCRIPTION.
-    mb : TYPE
-        DESCRIPTION.
-    ng : TYPE
-        DESCRIPTION.
+    na : int
+        n_alpha.
+    ma : int
+        m_alpha.
+    nb : int
+        n_beta.
+    mb : int
+        m_beta.
+    ng : int
+        n_gamma.
     mg : TYPE
-        DESCRIPTION.
-    nd : TYPE
-        DESCRIPTION.
-    md : TYPE
-        DESCRIPTION.
+        m_gamma.
+    nd : int
+        n_delta.
+    md : int
+        m_delta.
         
     Keyword Arguments
     -----------------
-    rydberg : TYPE
-        DESCRIPTION.
+    rydberg : bool
+        Return CMEs either in effective Rydberg or SI units.
 
     Returns
     -------
-    None.
+    CME : double
 
     '''
     
@@ -503,27 +503,30 @@ def __calc_origin_CME(na, ma, nb, mb, ng, mg, nd, md, rydberg=False):
 def calc_origin_CME_matrix(nx, ny, omega=1.0, consts=qd.Constants("vacuum"), 
                            rydberg=False):
     '''
-    
+    Calculates the Coulomb Matrix Elements for a harmonic orbital basis. CMEs
+    are calculated assuming omega = 1 and then appropriately scaled.
 
     Parameters
     ----------
-    nx : TYPE
-        DESCRIPTION.
-    ny : TYPE
-        DESCRIPTION.
+    nx : int
+        Number of harmonic orbitals along x.
+    ny : int
+        Number of harmonic orbitals along y.
         
     Keyword Arguments
     -----------------
-    omega : TYPE, optional
-        DESCRIPTION. The default is 1.0.
-    consts : TYPE, optional
-        DESCRIPTION. The default is qd.Constants("vacuum").
-    rydberg : TYPE, optional
-        DESCRIPTION. The default is False.
+    omega : double, optional
+        Omega for the harmonic orbital basis states. The default is 1.0.
+    consts : Constants class, optional
+        Contains constants value for material system. The default is "vacuum".
+    rydberg : bool, optional
+        Specify whether to evaluate the CMEs using Rydberg or SI units. The
+        default is False.
 
     Returns
     -------
-    None.
+    CMEs : double 2D array
+        2D array consisting of the Coulomb Matrix Elements.
 
     '''
     
@@ -580,7 +583,8 @@ def calc_origin_CME_matrix(nx, ny, omega=1.0, consts=qd.Constants("vacuum"),
         k = 1
     # Otherwise we have SI units and need to scale CMEs by k
     else:
-        k = consts.e**2 / (4 * consts.pi * consts.eps)
+        k = consts.e**2 / (4 * consts.pi * consts.eps) *\
+            np.sqrt(consts.me / consts.hbar)
         
     # Scale by k
     CMEs *= k
@@ -591,7 +595,44 @@ def calc_origin_CME_matrix(nx, ny, omega=1.0, consts=qd.Constants("vacuum"),
     
 
 def build_SO_basis_vectors(n_elec: int, spin_subspace, n_se_orbs: int):
-    
+    '''
+    Build the many electron spin orbit basis vectors. These can be used to map
+    the output of the many electron eigenvectors to the corresponding many
+    electron spatial wavefunctions and spin states.
+
+    Parameters
+    ----------
+    n_elec : int
+        Number of electrons.
+    spin_subspace : int array
+        Specifies which sping subspaces to use when constructing the 2nd 
+        quantization Hamiltonian. As an example, for a 3 electron system, there
+        are four possible S_z values [-1.5, -0.5, 0.5, 1.5]. To use only 
+        S_z > 0, set spin_subspace=[2,3] corresponding to the 3rd and 4th 
+        elemtns of the array. To use all spin subspaces, set spin_subspace='all'.
+        The default is 'all'.
+    n_se_orbs : int
+        Number of single electron orbitals to use when constructing the spin
+        orbit subspace.
+
+    Returns
+    -------
+    vec_so_basis : int 2D array
+        Compilation of all many electron spin orbit basis states. First index
+        corresponds to the ith state and the other indices are for the individual
+        electron states for that given many electron state. Format is as follows:
+        The first K = n_elec indicies correspond to the orbital state and the last
+        K = n_elec indicies correspond to the spin state.
+        As an explicit example for a K = 3 case, consider the multi-electron 
+        spin-orbit state [4,2,3,0,0,1] which means:
+        1st electron is in the 4th orbital state (idx=0) with spin down (idx=3)
+        2nd electron is in the 2nd orbital state (idx=1) with spin down (idx=4)
+        3rd electron is in the 3rd orbital state (idx=2) with spin up   (idx=5)
+    map_so_basis : int 2D array
+        A 2D array which maps the ith single electron spin orbit state (first
+        index) to the corresponding single electron orbital and spin state.
+
+    '''
     # Parse input, and convert to numpy array
     if spin_subspace == 'all':
         spin_subspace = np.array(range(n_elec+1))
@@ -698,7 +739,33 @@ def build_SO_basis_vectors(n_elec: int, spin_subspace, n_se_orbs: int):
 
 def build_second_quant_ham(n_elec: int, spin_subspace, n_se_orbs: int, 
                            ens_se_orbs, se_CMEs):
-    
+    '''
+    Construct the second quantization Hamiltonian
+
+    Parameters
+    ----------
+    n_elec : int
+        Number of electrons in the system.
+    spin_subspace : int array
+        Specifies which sping subspaces to use when constructing the 2nd 
+        quantization Hamiltonian. As an example, for a 3 electron system, there
+        are four possible S_z values [-1.5, -0.5, 0.5, 1.5]. To use only 
+        S_z > 0, set spin_subspace = [2,3] corresponding to the 3rd and 4th 
+        elemtns of the array. To use all spin subspaces, set spin_subspace='all'.
+        The default is 'all'.
+    n_se_orbs : int
+        Number of single electron orbital basis states.
+    ens_se_orbs : int
+        Corresponding single electron orbital basis state eigenenergies.
+    se_CMEs : double 2D array
+        Coulomb Matrix Elements in the single electron basis.
+
+    Returns
+    -------
+    H2ndQ : double 2D array
+        Second quantization hamiltonian.
+
+    '''
     
     ens_se_orbs = np.array(ens_se_orbs)
     if len(ens_se_orbs) != n_se_orbs:
@@ -751,7 +818,42 @@ def build_second_quant_ham(n_elec: int, spin_subspace, n_se_orbs: int,
     return H2ndQ
 
 def __hc_helper(n_elec, ndx, mdx, n_se_orbs, se_CMEs, vec_so_basis, map_so_basis):
-    
+    '''
+    Helper function for constructing H_c term of second quantization hamiltonian
+
+    Parameters
+    ----------
+    n_elec : int
+        Number of electrons in the system.
+    ndx : int
+        Current many electron spin orbit basis state index for 1st electron.
+    mdx : int
+        Current many electron spin orbit basis state index for 2nd electron.
+    n_se_orbs : int
+        Number of single electron orbital basis states.
+    se_CMEs : double 2D array
+        Coulomb Matrix Elements in the single electron basis.
+    vec_so_basis : int 2D array
+        Compilation of all many electron spin orbit basis states. First index
+        corresponds to the ith state and the other indices are for the individual
+        electron states for that given many electron state. Format is as follows:
+        The first K = n_elec indicies correspond to the orbital state and the last
+        K = n_elec indicies correspond to the spin state.
+        As an explicit example for a K = 3 case, consider the multi-electron 
+        spin-orbit state [4,2,3,0,0,1] which means:
+        1st electron is in the 4th orbital state (idx=0) with spin down (idx=3)
+        2nd electron is in the 2nd orbital state (idx=1) with spin down (idx=4)
+        3rd electron is in the 3rd orbital state (idx=2) with spin up   (idx=5)
+    map_so_basis : int 2D array
+        A 2D array which maps the ith single electron spin orbit state (first
+        index) to the corresponding single electron orbital and spin state.
+
+    Returns
+    -------
+    hc_elem : double
+        Calculated Coulomb Matrix Element <n|V|m>.
+
+    '''
     # Get number of single electron spin orbital states
     n_se_so = map_so_basis.shape[0]
 
@@ -761,21 +863,23 @@ def __hc_helper(n_elec, ndx, mdx, n_se_orbs, se_CMEs, vec_so_basis, map_so_basis
     # operator corresponding to the n = [ind] spin-orbit state
     def __anhilation_helper(state, idx, map_so_basis):
         '''
-        This function simply takes an input ket and applies the anhilation
+        This function takes an input ket and applies the anhilation
         operator corresponding to the n = [idx] spin-orbit state
 
         Parameters
         ----------
-        state : TYPE
-            DESCRIPTION.
-        idx : TYPE
-            DESCRIPTION.
-        map_so_basis : TYPE
-            DESCRIPTION.
+        state : 1D array
+            Inputted state before anhilation.
+        idx : int
+            Spin-orbit state to be anhilated.
+        map_so_basis : int 2D array
+            A 2D array which maps the ith single electron spin orbit state (first
+            index) to the corresponding single electron orbital and spin state.
 
         Returns
         -------
-        None.
+        state : 1D array
+            State after anhilation.
 
         '''
 
@@ -802,12 +906,13 @@ def __hc_helper(n_elec, ndx, mdx, n_se_orbs, se_CMEs, vec_so_basis, map_so_basis
 
         Parameters
         ----------
-        state : TYPE
-            DESCRIPTION.
+        state : 1D array
+            State of interest.
 
         Returns
         -------
-        None.
+        phase : int
+            Accumulated phase from repeated anhilation operations.
 
         '''
 

@@ -197,37 +197,57 @@ def solve_many_elec_SE(gparams, n_elec, n_xy_ho, n_se, n_sols=4,
 
     Parameters
     ----------
-    gparams : TYPE
-        DESCRIPTION.
-    n_elec : TYPE
-        DESCRIPTION.
-    n_xy_ho : TYPE
-        DESCRIPTION.
-    n_se : TYPE
-        DESCRIPTION.
-    n_sols : TYPE, optional
-        DESCRIPTION. The default is 4.
-    consts : TYPE, optiona
-        DESCRIPTION. The default is "vacuum".
-    optimize_omega : TYPE, optional
-        DESCRIPTION. The default is True.
-    omega : TYPE, optional
-        DESCRIPTION. The default is None.
-    opt_omega_n_se : TYPE, optional
-        DESCRIPTION, The default is 2.
-    ho_CMEs : TYPE, optional
-        DESCRIPTION. The default is None.
-    CME_path : TYPE, optional
-        DESCRIPTION. The default is None.
-    spin_subspace : TYPE, optional
-        DESCRIPTION. The default is 'all'.
+    gparams : GridParameters class
+        Contains grid and potential information.   
+    n_elec : int
+        Number of electrons in the system.
+    n_xy_ho : int array
+        Number of harmonic orbitals along x and y axes to use when calculating
+        the many electron energy spectra. Input should have two elements [nx, ny]
+    n_se : int
+        Number of single electron energy levels to consider when calculating
+        the many electron energies.
+        
+    Keyword Arguments
+    -----------------
+    n_sols : int, optional
+        Number of many electron eigenenergies and eigenvectors to return. The
+        default is 4.
+    consts : Constants class, optional
+        Contains constants value for material system. The default is "vacuum".
+    optimize_omega : bool, optional
+        Specify whether to optimize choice of omega used to construct the basis
+        of single electron harmonic orbitals. The default is True.
+    omega : double, optional
+        Initial guess for omega used to construct single electron harmonic
+        orbital basis. The default is None.
+    opt_omega_n_se : int, optional
+        Number of single electron states to use when optimizing choice of omega.
+        The default is 2.
+    ho_CMEs : 2D double array, optional
+        Coulomb matrix elements for the single electron harmonic orbital basis
+        when omega=1. Preloading this value significantly improves calculation
+        speed. When not specified, these will be calculated as needed. The
+        default is None.
+    CME_path : string, optional
+        Full file path to either the location of a precalculated ho_CMEs or to
+        where the ho_CMEs should be saved after being calculated. If not 
+        specified, then ho_CMEs will neither be loaded nor saved. The default
+        is None.
+    spin_subspace : int array, optional
+        Specifies which sping subspaces to use when constructing the 2nd 
+        quantization Hamiltonian. As an example, for a 3 electron system, there
+        are four possible S_z values [-1.5, -0.5, 0.5, 1.5]. To use only 
+        S_z > 0, set spin_subspace=[2,3] corresponding to the 3rd and 4th 
+        elemtns of the array. To use all spin subspaces, set spin_subspace='all'.
+        The default is 'all'.
 
     Returns
     -------
-    many_elec_ens : TYPE
-        DESCRIPTION.
-    many_elec_vecs : TYPE
-        DESCRIPTION.
+    many_elec_ens : double array
+        The many electron eigenergies.
+    many_elec_vecs : double array
+        The many electron eigenvectors.
 
     '''
     
@@ -307,6 +327,7 @@ def solve_many_elec_SE(gparams, n_elec, n_xy_ho, n_se, n_sols=4,
     print('Transforming the CME library to single electron basis...\n')
     
     '''
+    MATLAB CODE TO EVENTUALLY IMPLEMENT
     % Get a subset of the CMEs if the given nOrigins parameter in the
     % simparams file is less than what we've solved for in the library
     % already. Useful for checking convergence wrt number of orbitals. 
@@ -315,7 +336,7 @@ def solve_many_elec_SE(gparams, n_elec, n_xy_ho, n_se, n_sols=4,
     
     # Scale the CMEs to match the origin HOs used to construct the
     # transformation matrix
-    A = np.sqrt(consts.hbar / (consts.me * omega_opt))
+    A = np.sqrt(1.0 / omega_opt)
 
     # Now do a basis transformation using a_mat
     full_trans_mat = np.kron(a_mat, a_mat)
