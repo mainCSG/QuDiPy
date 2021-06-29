@@ -5,9 +5,14 @@ testing.py
 # I use tutorials/test.py for testing purposes and don't want it tracked
 tutorials/test.py
 tutorials/QuDiPy tutorial data
+tutorials/qudipy
+test.py
+test2.py
+test_preprocessed_data
+test_data_directory
+
 *.pyc
 __pycache__/
 *.csv
 
-# for testing purposes
-tutorials/qudipy
+
