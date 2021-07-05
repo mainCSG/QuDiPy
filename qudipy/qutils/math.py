@@ -41,7 +41,77 @@ def inner_prod(gparams, wf1, wf2):
             
     return inn_prod
 
-   
+def expectation_value(gparams, wf, operator):
+    '''
+    Evaluates the expectation value for an observable of a wavefunction.
+
+    Parameters
+    ----------
+    gparams : GridParameters class
+        Contains grid and potential information.
+    wf : complex array
+        Wavefunction for the expectation value. If grid is 2D, then the 
+        array should be in meshgrid format.
+    operator : complex array
+        Matrix representation of the operator for the expectation value.
+        
+    Keyword Arguments
+    ----------------
+    None.
+
+    Returns
+    -------
+    exp_val : complex float
+        The expectation value for the observable of a wavefunction.
+
+    '''
+    
+    if gparams.grid_type == '1D':
+        exp_val = np.trapz(np.multiply(wf.conj(), np.matmul(operator, wf)), 
+                           x=gparams.x)
+    elif gparams.grid_type == '2D':
+        exp_val = np.trapz(np.trapz(np.multiply(wf.conj(), np.matmul(operator, wf)), 
+                           x=gparams.x, axis=1), gparams.y)
+            
+    return exp_val
+
+def matrix_element(gparams, wf1, wf2, operator):
+    '''
+    Evaluates the matrix element between two complex wavefunctions.
+
+    Parameters
+    ----------
+    gparams : GridParameters class
+        Contains grid and potential information.
+    wf1 : complex array
+        'Bra' wavefunction for the matrix element. If grid is 2D, then the 
+        array should be in meshgrid format.
+    wf2 : complex array
+        'Bra' wavefunction for the matrix element. If grid is 2D, then the 
+        array should be in meshgrid format.
+    operator : complex array
+        Matrix representation of the operator for the matrix element.
+        
+    Keyword Arguments
+    ----------------
+    None.
+
+    Returns
+    -------
+    mtx_elem : complex float
+        The matrix element between two complex wavefunctions.
+
+    '''
+    
+    if gparams.grid_type == '1D':
+        mtx_elem = np.trapz(np.multiply(wf1.conj(), np.matmul(operator, wf2)), 
+                           x=gparams.x)
+    elif gparams.grid_type == '2D':
+        mtx_elem = np.trapz(np.trapz(np.multiply(wf1.conj(), np.matmul(operator, wf2)), 
+                           x=gparams.x, axis=1), gparams.y)
+            
+    return mtx_elem
+
 def project_up(rho, elem):
     """
     Projects the system density matrix onto the spin-up state of 
@@ -90,7 +160,7 @@ def project_up(rho, elem):
     
         return  np.array(projected_rho)
     
-    elif isinstance(elem, (tuple, list, set) ):
+    if isinstance(elem, (tuple, list, set) ):
         projected_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -99,10 +169,8 @@ def project_up(rho, elem):
             projected_rho = project_up(projected_rho, el)
         return projected_rho
     
-    else:
-        print("Qubits that are traced out should be defined by a single int \
-              number or an iterable of ints. Try again")
-            
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 def project_down(rho, elem):
     """
@@ -152,7 +220,7 @@ def project_down(rho, elem):
     
         return np.array(projected_rho)
     
-    elif isinstance(elem, (tuple,list,set)):
+    if isinstance(elem, (tuple,list,set)):
         projected_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -160,10 +228,9 @@ def project_down(rho, elem):
         for el in elems_sorted:
             projected_rho = project_down(projected_rho, el)
         return projected_rho
-    
-    else:
-        print("Qubits that are traced out should be defined by a single int \
-              number or a tuple of ints. Try again")
+
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 
 def partial_trace(rho, elem):
@@ -186,7 +253,7 @@ def partial_trace(rho, elem):
     if isinstance(elem, int):
         return project_up(rho, elem) + project_down(rho, elem)
     
-    elif isinstance(elem, (tuple, set, list)):
+    if isinstance(elem, (tuple, set, list)):
         traced_rho = rho.copy()
         elems_sorted = sorted(elem, reverse=True)
             #iterable sorted in the reversed order; necessary for the correct 
@@ -194,10 +261,10 @@ def partial_trace(rho, elem):
         for el in elems_sorted:
             traced_rho = partial_trace(traced_rho, el)
         return traced_rho
-    else:
-        #error with the input 
-        raise ValueError("Qubits that are traced out should be defined by a  \
-                         single int number or an iterable of ints. Try again")
+    
+    #error with the input 
+    raise ValueError("Qubits that are traced out should be defined by a  \
+                        single int number or an iterable of ints. Try again")
 
 def matrix_sqrt(A):
     """

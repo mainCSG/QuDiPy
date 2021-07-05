@@ -5,7 +5,7 @@ Created on Mon Jun  1 21:58:04 2020
 """
 
 from .utils.constants import Constants
-from .utils.simparams import SimulationParameters
+from .utils.sim_params import SimulationParameters
 from . import chargestability
 from . import exchange
 from . import potential

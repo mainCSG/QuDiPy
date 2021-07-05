@@ -28,11 +28,12 @@ class ControlPulse:
         pulse_length : int, optional
             Total length of pulse in [s]. The default is -1.
             This is an optional keyword because 
-            sometimes you may wish to vary the pulse length across different
-            simulations for a given pulse. Pulse length can be set later using
-            the set_pulse_length() method.
+            sometimes you may wish to vary the pulse length across
+            different simulations for a given pulse. Pulse length 
+            can be set later using the set_pulse_length() method.
         ideal_gate : string, optional
-            The ideal gate keyword for this control pulse. The default is None.
+            The ideal gate keyword for this control pulse. The default
+            is None.
 
         Returns
         -------
@@ -44,15 +45,19 @@ class ControlPulse:
         
         self.name = pulse_name
         self.length = pulse_length # Units are s
+        self.n_pts = 0 # Number of points in pulse (default 0), must be same among control variables
         
-        self.ctrl_pulses = {
-            }
+        self.ctrl_pulses = {}
         self.ctrl_names = []
         self.n_ctrls = 0
         
         self.ideal_gate = ideal_gate
-        
+       
         self.ctrl_time = None
+
+        # Attribute to be initialized later in _generate_ctrl_interpolators
+        self.ctrl_interps = None
+        
         
     def __call__(self, time_pts):
                 
@@ -62,7 +67,8 @@ class ControlPulse:
         Parameters
         ----------
         time_pts : 1D float array
-            Time points where we want to obtain the interpolated pulse values.
+            Time points where we want to obtain the interpolated pulse
+            values.
 
         Returns
         -------
@@ -73,10 +79,9 @@ class ControlPulse:
         
         # Check that we actually have a valid pulse length set
         if self.length == -1:
-            print('Cannot call control pulse object.\nPulse length has not '+
-                  'been specified.\nPlease set using the .set_pulse_length()'+
-                  'method.')
-            return
+            print('Cannot call control pulse object.\nPulse length has not been specified.'\
+                            + '\nPlease set using the .set_pulse_length() method.')
+            return None
         
         # Check if the interpolators have been constructed. If not, then 
         # make them.
@@ -105,21 +110,21 @@ class ControlPulse:
     
     def plot(self, plot_ctrls='all', time_int='full', n=250):
         '''
-        Plot the control pulse. Can plot a subset of the control variables 
-        and within some time interval.
+        Plot the control pulse. Can plot a subset of the control
+        variables and within some time interval.
 
         Keyword Arguments
         -----------------
         plot_ctrls : list of strings, optional
-            Specify the name of each control variable pulse you wish to plot
-            or plot 'all'. The default is 'all'.
+            Specify the name of each control variable pulse you wish
+            to plot or plot 'all'. The default is 'all'.
         time_int : list of floats
-            Specify the time interval over which to plot the pulse. Cannot be
-            less than 0 or greater than the current pulse length. The default 
-            is the full time interval.
+            Specify the time interval over which to plot the pulse.
+            Cannot be less than 0 or greater than the current pulse
+            length. The default is the full time interval.
         n : int, optional
-            Number of points to use in the pulse when plotting. The default is
-            250.
+            Number of points to use in the pulse when plotting. The 
+            default is 250.
 
         Returns
         -------
@@ -230,8 +235,9 @@ class ControlPulse:
         
     def add_control_variable(self, var_name, var_pulse):
         '''
-        Adds a control variable to the pulse. If the variable name is time,
-        then it will store the time points in the ctrl_time variable.
+        Adds a control variable to the pulse. If the variable name is
+        time, then it will store the time points in the ctrl_time
+        variable.
         
         Parameters
         ----------
@@ -249,7 +255,7 @@ class ControlPulse:
         # Check that the new control variable pulse has the same number of 
         # points as all the other control variables (if this is first one, 
         # then save the number of points)
-        if hasattr(self,'n_pts'):
+        if self.n_pts != 0:
             if len(var_pulse) != self.n_pts:
                 raise ValueError('Number of pulse points is not equal to the '+
                                  'current\nnumber of pulse points in previously '+
@@ -276,8 +282,8 @@ class ControlPulse:
             
     def _generate_ctrl_interpolators(self):
         '''
-        Loop through every control variable and make a 1D time interpolation 
-        object.
+        Loop through every control variable and make a 1D time 
+        interpolation object.
 
         Returns
         -------

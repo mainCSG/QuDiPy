@@ -1,5 +1,6 @@
 '''
-File used to generate and plot charge stability diagrams for double dot systems using the constant interaction model.
+File used to generate and plot charge stability diagrams for double dot
+systems using the constant interaction model.
 '''
 import numpy as np
 import pandas as pd
@@ -10,27 +11,35 @@ consts = Constants("vacuum")
 
 class CIMCSD:
     '''
-    Initialize the charge stability diagram class which generates charge stability diagrams based on given capacitance parameters.
-    Based off of the analisys in section II.A and Appendix 3 in https://doi.org/10.1103/RevModPhys.75.1.
-    This class is intended for testing of the analysis module and comparing extracted input parameter with known input parameters.
+    Initialize the charge stability diagram class which generates charge
+    stability diagrams based on given capacitance parameters. Based off 
+    of the analisys in section II.A and Appendix 3 in 
+    https://doi.org/10.1103/RevModPhys.75.1. This class is intended for 
+    testing of the analysis module and comparing extracted input 
+    parameter with known input parameters.
     '''
     def __init__(self, c_l, c_r, c_m, c_g1, c_g2):
         '''
          
         Parameters
         ----------
-        c_l: Capacitance between the left resevoir and dot 1
-        c_r: Capacitance between the right resevoir dot 2
-        c_m: Capacitance between dot 1 and 2
-        c_g1: Capacitance between gate 1 and dot 1
-        c_g2:  Capacitance between gate 2 and dot 2
+        c_l: float
+            Capacitance between the left resevoir and dot 1
+        c_r: float
+            Capacitance between the right resevoir dot 2
+        c_m: float
+            Capacitance between dot 1 and 2
+        c_g1: float
+            Capacitance between gate 1 and dot 1
+        c_g2: float 
+            Capacitance between gate 2 and dot 2
 
         Returns
         -------
         None
 
         '''
-        # TODO generatlize this number
+        # TODO generalize this number
         self.n_sites = 2
         
         # Capacitances between dots and resevoirs
@@ -56,19 +65,37 @@ class CIMCSD:
         # Electrostatic coupling energy
         self.e_cm = consts.e**2 * self.c_m / (self.c_1 * self.c_2 - self.c_m**2)
 
-    def generate_csd(self, v_g1_max, v_g2_max, v_g1_min=0, v_g2_min=0, num=100):
-        ''' Generates the charge stability diagram between v_g1(2)_min and v_g1(2)_max with num by num data points in 2D
+        # Attributes to be defined in later methods
+        # generate_csd:
+        self.num = None
+        self.v_g1_min = None
+        self.v_g1_max = None
+        self.v_g2_min = None
+        self.v_g2_max = None
+        self.v_1_values = None
+        self.v_2_values = None
+        self.occupation = None
 
-        Parameters
+    def generate_csd(self, v_g1_max, v_g2_max, v_g1_min=0, v_g2_min=0, num=100):
+        ''' 
+        Generates the charge stability diagram between v_g1(2)_min and
+        v_g1(2)_max with num by num data points in 2D
+
         ----------
-        v_g1_max: maximum voltage on plunger gate 1
-        v_g2_max: maximum voltage on plunger gate 2
+        v_g1_max: float
+            maximum voltage on plunger gate 1
+        v_g2_max: float
+            maximum voltage on plunger gate 2
 
         Keyword Arguments
         -----------------
-        v_g1_max: minimum voltage on plunger gate 1 (default 0)
-        v_g2_max: minimum voltage on plunger gate 2 (default 0)
-        num: number of voltage point in 1d, which leads to a num^2 charge stability diagram (default 100)
+        v_g1_min: float
+            minimum voltage on plunger gate 1 (default 0)
+        v_g2_min: float
+            minimum voltage on plunger gate 2 (default 0)
+        num: int
+            number of voltage point in 1d, which leads to a num^2 
+            charge stability diagram (default 100)
 
         Returns
         -------
@@ -86,42 +113,51 @@ class CIMCSD:
         self.v_2_values = np.around(np.linspace(self.v_g2_min, self.v_g2_max, num), decimals=6)
         
         # Goes through all the v_1 and v_2 values and generate the csd data
-        occupation = [[[self._lowest_energy(v_1, v_2)] for v_1 in self.v_1_values] for v_2 in self.v_2_values]
+        occupation = [[[self._lowest_energy(v_1, v_2)] for v_1 in self.v_1_values] for v_2 
+                        in self.v_2_values]
 
         # Create a num by num DataFrame from occupation data information as entries
         self.occupation = pd.DataFrame(occupation, index=self.v_1_values, columns=self.v_2_values)
 
     def calculate_energy(self, n_1, n_2, v_g1, v_g2):
-        '''Returns energy of dot with occupation n_1, n_2 with applied voltages v_g1, v_g2.
-        Dependent on c_l, c_r, c_m, c_g1 and c_g2 defined when object is initialized.
+        '''
+        Returns energy of dot with occupation n_1, n_2 with applied 
+        voltages v_g1, v_g2. Dependent on c_l, c_r, c_m, c_g1 and c_g2 
+        defined when object is initialized.
 
-        Parameters
         ----------
-        n_1: Occupation on dot 1
-        n_2: Occupation on dot 2
-        v_g1: voltage on plunger gate 1
-        v_g2: voltage on plunger gate 2
+        n_1: int
+            Occupation on dot 1
+        n_2: int
+            Occupation on dot 2
+        v_g1: float
+            voltage on plunger gate 1
+        v_g2: float
+            voltage on plunger gate 2
 
         Returns
         -------
         Energy of system in joules
         '''
         # This is formula A12 from Appendix 3 of the paper references at the top of the file
-        f = - 1/consts.e * (
-            self.c_g1 * v_g1 * (n_1 * self.e_c1 + n_2 * self.e_cm) + self.c_g2 * v_g2 * (
-                n_1 * self.e_cm + n_2 * self.e_c2)) + 1/consts.e**2 * (1/2 * self.c_g1**2 * v_g1**2 * self.e_c1 + 1/2 * self.c_g2**2 *
-                                                                v_g2**2 * self.e_c2 + self.c_g1 * v_g1 * self.c_g2 * v_g2 * self.e_cm)
+        f = - 1/consts.e * (self.c_g1 * v_g1 * (n_1 * self.e_c1 + n_2 * self.e_cm) + self.c_g2 
+                * v_g2 * (n_1 * self.e_cm + n_2 * self.e_c2)) + 1/consts.e**2 * (1/2 * self.c_g1**2 
+                * v_g1**2 * self.e_c1 + 1/2 * self.c_g2**2 * v_g2**2 * self.e_c2 + self.c_g1 * v_g1 
+                * self.c_g2 * v_g2 * self.e_cm)
 
         return 1/2 * n_1**2 * self.e_c1 + 1/2 * n_2**2 * self.e_c2 + n_1 * n_2 * self.e_cm + f
 
     def _lowest_energy(self, v_g1, v_g2):
-        '''Returns occupation (n_1, n_2) with lowest energy for applied gate voltages v_g1, v_g2. 
-        Dependent on c_l, c_r, c_m, c_g1 and c_g2 defined when object is initialized.
+        '''
+        Returns occupation (n_1, n_2) with lowest energy for applied
+        gate voltages v_g1, v_g2. Dependent on c_l, c_r, c_m, c_g1
+        and c_g2 defined when object is initialized.
 
-        Parameters
         ----------
-        v_g1: voltage on plunger gate 1
-        v_g2: voltage on plunger gate 2
+        v_g1: float
+            voltage on plunger gate 1
+        v_g2: float
+            voltage on plunger gate 2
 
         Returns
         -------
@@ -129,11 +165,13 @@ class CIMCSD:
 
         '''
 
-        # get occupation giving lowest energy assuming a continuous variable function (i.e derivative of 0)
-        n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 * (
-             1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2 * (self.e_cm/self.e_c2 - self.e_cm/self.e_c1))
-        n_2 = -n_1 * self.e_cm/self.e_c2 + 1 / \
-            consts.e * (self.c_g1 * v_g1 * self.e_cm/self.e_c2 + self.c_g2 * v_g2)
+        # get occupation giving lowest energy assuming a continuous variable
+        # function (i.e derivative of 0)
+        n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 
+                * (1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2 
+                * (self.e_cm/self.e_c2 - self.e_cm/self.e_c1))
+        n_2 = -n_1 * self.e_cm/self.e_c2 + 1 / consts.e * (self.c_g1 * v_g1 * self.e_cm/self.e_c2 
+                + self.c_g2 * v_g2)
 
         # goes over 4 closest integer lattice points to find integer solution with lowest energy
         trial_occupations = [(floor(n_1), floor(n_2)), (floor(n_1) + 1, floor(n_2)),
@@ -145,7 +183,6 @@ class CIMCSD:
             return tuple(state)
         if state[0] < 0 and state[1] < 0:
             return (0, 0)
-        elif state[0] < 0:
+        if state[0] < 0:
             return (0, state[1])
-        else:
-            return (state[0], 0)
+        return (state[0], 0)

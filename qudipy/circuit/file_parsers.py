@@ -6,8 +6,8 @@ Functions for handling control pulse files .ctrlp
 import os
 import pandas as pd
 import numpy as np
-from .quantumCircuit import QuantumCircuit
-from .controlPulse import ControlPulse
+from .quantum_circuit import QuantumCircuit
+from .control_pulse import ControlPulse
 
 def _load_one_pulse(f_name):
     '''
@@ -90,7 +90,7 @@ def load_pulses(f_names):
     # Check if list of file names was passed.
     # If it was not, then only a single file name was passed and we need to
     # wrap it in a list container.
-    if isinstance(f_names, list) == False:
+    if not isinstance(f_names, list):
         f_names = [f_names]
     
     # Loop through each file, load the pulse then add to the pulse dictionary.
@@ -101,7 +101,7 @@ def load_pulses(f_names):
         
     return pulse_dict
       
-def load_circuit(f_name, gate_dict={}):
+def load_circuit(f_name, gate_dict=None):
     '''
     This function takes in a single quantum circuit .qcirc file as input and 
     constructs a quantum circuit object
@@ -120,11 +120,14 @@ def load_circuit(f_name, gate_dict={}):
     Returns
     -------
     q_circ : QuantumCircuit object
-        Class containing information loaded from the .qcirc file required for
-        simulation.
+        Class containing information loaded from the .qcirc file 
+        required for simulation.
 
     '''
-    
+    # If a dictionary was not passed to the function, assign gate_dict as an empty dictionary
+    if not gate_dict:
+        gate_dict = {}
+
     # Check file extension
     if f_name[-6::] != ".qcirc":
         raise ValueError("Unrecognized quantum circuit file type..." +
@@ -134,7 +137,7 @@ def load_circuit(f_name, gate_dict={}):
     f = open(f_name, "r")
     circuit_name = os.path.basename(f.name).split('.')[0]
 
-    # Loop over every gate in the circuit file.
+    # Loop over every gate in the circuit file
     for x in f:
         # Parse line by line
         if "Number of qubits:" in x:
@@ -150,10 +153,7 @@ def load_circuit(f_name, gate_dict={}):
             
             # Track if the current line in the file is an ideal gate or a
             # pulse file that was loaded
-            if check_ideal_gate(gate_name):
-                is_ideal_gate = True
-            else:
-                is_ideal_gate = False                            
+            is_ideal_gate = check_ideal_gate(gate_name)
             
             # Check that the gate name is one that was actually loaded or a
             # valid ideal gate and print an error if not
@@ -162,7 +162,7 @@ def load_circuit(f_name, gate_dict={}):
                                  f"{circuit_name}.\n" +
                                  f"Gate {gate_name} could not be loaded as " +
                                  "the corresponding pulse was not loaded or " + 
-                                 " is not the gate name a ideal gate keyword.\n" +
+                                 "is not the gate name a ideal gate keyword.\n" +
                                  "Check .qcirc file for typos or load the " +
                                  "corresponding pulse file.")
             
@@ -176,7 +176,7 @@ def load_circuit(f_name, gate_dict={}):
                 ideal_gate = q_circ.gates[gate_name].ideal_gate
                 # Check that it's a valid ideal gate keyword and that the 
                 # ideal_gate isn't None (i.e. not specified in the pulse file)
-                if not check_ideal_gate(ideal_gate) and ideal_gate != None:
+                if not check_ideal_gate(ideal_gate) and ideal_gate:
                     raise ValueError("Problem loading circuit file: " +
                                      f"{circuit_name}.\n" +
                                      f"Gate {gate_name}.ctrlp could not be loaded " +
@@ -204,7 +204,7 @@ def load_circuit(f_name, gate_dict={}):
     
     return q_circ    
     
-def check_ideal_gate(gate_name, qubit_idx=[]):
+def check_ideal_gate(gate_name, qubit_idx=None):
     '''
     This function checks if the supplied gate_name is a valid ideal gate
     keyword used to simulate an ideal quantum circuit. 
@@ -227,45 +227,36 @@ def check_ideal_gate(gate_name, qubit_idx=[]):
     boolean
 
     '''
+
+    # If qubit_idx was not passed to function, assign an empty list
+    if not qubit_idx:
+        qubit_idx = []
     
     # If gate name is None type then that means there was no ideal gate line
     # specified in the corresponding pulse file
-    if gate_name is None:
-        return False    
-    
-    # Quick check by looking at gate name length
-    if len(gate_name) not in [1,4,5]:
+    # Also, quick check by looking at gate name length
+    if gate_name == None or len(gate_name) not in [1,4,5]:
         return False
     
-    # Check I gate:
-    if gate_name == "I":
-        return True
-    
-    # Check H gate
-    if gate_name == "H":
-        return True
-    
-    # Check for a R gate first
+    # Check for an R gate first
     if gate_name[0] == "R" and gate_name[1] in ["X","Y","Z"]:
         # Now check that the next three characters are ints
         for idx in range(2,5):
             try:
                 int(gate_name[idx])
-            except:
+            except (ValueError, IndexError):
                 return False
         return True
     
-    # Check CTRL gates
-    if gate_name[:4] == "CTRL" and gate_name[4] in ["Z","X","Y"]:
-        # Now check qubit number, must be an even number of used qubits
-        if np.mod(len(qubit_idx),2) == 0:
-            return True
-    
-    # Check SWAP and RSWAP
-    if gate_name == "SWAP" or gate_name == "RSWAP":
-        # Now check qubit number, must be an even number of used qubits
-        if np.mod(len(qubit_idx),2) == 0:
-            return True
+    # Check I, H, and CTRL gates, and (if CTRL, SWAP, or RSWAP gate)
+    # check qubit number (must be an even number of used qubits)
+    if gate_name in ("I", "H") \
+            or (len(gate_name) == 5 \
+            and gate_name[:4] == "CTRL" \
+            and gate_name[4] in ["Z","X","Y"] \
+            or gate_name in ("SWAP", "RSWAP")) \
+            and np.mod(len(qubit_idx),2) == 0:
+        return True
     
     # Otherwise
     return False
