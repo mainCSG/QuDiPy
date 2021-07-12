@@ -2,8 +2,76 @@ import numpy as np
 import os
 import re
 
+def is_float(string):
+    """ True if given string is float else False"""
+    try:
+        return float(string)
+    except ValueError:
+        return False
+
+def is_int(string):
+    """ True if given string is int else False"""
+    try:
+        return int(string)
+    except ValueError:
+        return False
 
 def load_file(filename):
+    """
+    returns a single array ordered by the coordinates for potential.dat
+            a tuple of 3 element, x, y, z for coord files
+    """
+    data = []
+    x = []
+    y = []
+    z = []
+    counter = 0
+    with open(filename, 'r') as f:
+        d = f.readlines()
+        if filename[-4:] == '.dat':
+            for i in d:
+                k = i.rstrip().split(" ")
+                data.append(float(k[0]))     
+            data = np.array(data, dtype='O')
+            return data
+        else:
+            for i in d:
+                k = i.rstrip().split(" ")
+                if is_float(i)==False:
+                    # append number list if the element is an int but not float
+                    try:
+                        int(i)
+                        if counter == 0:
+                            x.append(float(k[0]))
+                        elif counter == 1:
+                            y.append(float(k[0]))
+                        else:
+                            z.append(float(k[0]))
+                    # ValueError happens when it hits an empty line
+                    except ValueError:
+                        # print(i)
+                        counter+=1
+                # counter keeps track of which coord the data belong to
+                elif counter == 0:
+                    x.append(float(k[0]))
+                elif counter == 1:
+                    y.append(float(k[0]))
+                else:
+                    z.append(float(k[0]))
+            # x = np.array(x, dtype='O')
+            # y = np.array(y, dtype='O')
+            # z = np.array(z, dtype='O')
+            # x = np.array(x, dtype='float')
+            # y = np.array(y, dtype='float')
+            # z = np.array(z, dtype='float')
+
+            x = [float(i) for i in x]
+            y = [float(i) for i in y]
+            z = [float(i) for i in z]
+
+            return x, y, z
+
+def load_file_test(filename):
     '''
     Parameters
     ----------
@@ -250,13 +318,7 @@ def reshape_potential(potential, x, y, z, slice, f_type):
         running along the columns/rows. 2D potential data files will be transposed prior 
         to writting to data file.
     '''
-    pot3DArray = np.reshape(potential,(xsize,ysize,zsize), order='F')
-
-
-
-    # test
-    # for i in range(zsize):
-    #     pot3DArray[:,:,i] = pot3DArray[:,:,i] * -1
+    pot3DArray = np.reshape(potential,(xsize,ysize,zsize))
 
     print('size of 3d array {}'.format(np.shape(pot3DArray))) # delete
 
@@ -300,12 +362,19 @@ def xy_potential(potentialL, gates, slice, f_type, dir_path):
 
         # create an array of zeros with the demension of the potential 2D slice and x/y coordinate axis
         coords_and_pot = np.zeros((np.shape(potential2D)[0]+1, np.shape(potential2D)[1]+1),dtype=float)
+        
+        # print(np.shape(i[2][0]))
+        # print(np.shape(i[2][1]))
+
+        # print(np.shape(coords_and_pot))
+
+        # print(np.shape(coords_and_pot[0,1:] ))
+        # print(np.shape(coords_and_pot[1:,0] ))
 
         # insert x,y, and potential 2D slice into array
         coords_and_pot[0,1:] = i[2][1]
         coords_and_pot[1:,0] = i[2][0]
-        # coords_and_pot[1:,1:] = potential2D
-        coords_and_pot[1:,1:] = -1*potential2D # delete
+        coords_and_pot[1:,1:] = potential2D
 
         # transpose array to align with load_data.load_potential()
         coords_and_pot = np.transpose(coords_and_pot)
@@ -326,6 +395,103 @@ def xy_potential(potentialL, gates, slice, f_type, dir_path):
         np.savetxt(f_path, coords_and_pot, delimiter=',')
         
     return 0
+
+def xy_potential_test(potentialL, gates, slice, f_type, dir_path):
+    '''
+    Parameters
+    ----------
+    potentialL: 
+    slice:
+    gates:
+        
+    Keyword Arguments
+    ----------
+    f_type:
+    dir_path:
+    
+    Returns
+    -------
+    Potential or electric field XY-plane data is saved for slice
+    '''
+
+    potentialL_copy = potentialL.copy()
+    # loop through each combination of gate voltages
+    for i in potentialL_copy:
+
+        if f_type in ['pot', 'potential', 'Uxy']:
+            f_name = 'Uxy'
+            # slice an x-y plane of the potentials
+            potential2D = reshape_potential(i[1], i[2][0], i[2][1], i[2][2], slice, f_name)
+        elif f_type in ['field', 'electric', 'Ez']:
+            f_name = 'Ez'
+            potential2D = reshape_potential(i[1], i[2][0], i[2][1], i[2][2], slice, f_name)
+
+
+    potentialL_copy = potentialL.copy()
+    # loop through each combination of gate voltages
+    for i in potentialL_copy:
+        if f_type == "potential":
+            # slice an x-y plane of the potentials
+            potential2D = reshape_potential(i[1], i[2][0], i[2][1], i[2][2], slice, f_name)
+        elif f_type == "field":
+            potential2D = reshape_potential(i[1], i[2][0], i[2][1], i[2][2], slice, f_name)
+        i[1] = potential2D
+        # reverse the list of voltages for sorting purpose
+        i[0].reverse()
+    potentialL_copy.sort()
+
+    # stack up the potential arrays in the correct order
+    potential_elmt = ()
+    for i in range(len(potentialL_copy)):
+        potential_elmt = potential_elmt + (potentialL_copy[i][1],) 
+    potential_overall = np.stack(potential_elmt, axis = 0)
+
+    # get the shape of the potential based on the number of gates and the voltages of each gate
+    shape = ()
+    for v in gates:
+        if len(v) > 1:
+            shape = shape + (len(v),)
+      
+    shape = shape+ (len(i[2][0]), len(i[2][1]))
+
+    potential_reshaped = np.reshape(potential_overall,shape)
+
+    # # transpose array to align with load_data.load_potential()
+    # potential_reshaped = np.transpose(potential_reshaped)
+
+    for j in range(len(i[0])):
+        f_name = f_name+ '_' + gates[j] + '_' + "{:.3f}".format(i[0][j])
+
+    f_name +='.txt'
+
+    # create directory for preprocessed data
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+
+    # join file name to directory path
+    f_path = os.path.join(dir_path,f_name)
+
+    # save potential data for xy slice
+    np.savetxt(f_path, potential_reshaped, delimiter=',')
+
+    return 0
+
+
+    # for j in range(len(i[0])):
+    #     f_name = f_name+ '_' + gates[j] + '_' + "{:.3f}".format(i[0][j])
+
+    # f_name +='.txt'
+
+    # # create directory for preprocessed data
+    # if not os.path.exists(dir_path):
+    #     os.mkdir(dir_path)
+
+    # # join file name to directory path
+    # f_path = os.path.join(dir_path,f_name)
+
+    # # save potential data for xy slice
+    # np.savetxt(f_path, coords_and_pot, delimiter=',')
+
 
 def write_data(input_nextnano,output_preprocessed,slice,data_forms):
     
