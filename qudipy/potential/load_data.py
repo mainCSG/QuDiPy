@@ -177,9 +177,9 @@ def load_potentials(ctrl_vals, ctrl_names, f_type='pot', f_dir=None,
     for idx, curr_cvals in enumerate(product(*ctrl_vals)):
         # Now build up the current file name
         # First figure out type of file to load (electric or potential)
-        if f_type in ['pot', 'potential', 'Uxy']:
+        if f_type.lower() in ['pot', 'potential', 'Uxy']:
             f_name = 'Uxy'
-        elif f_type in ['field', 'electric', 'Ez']:
+        elif f_type.lower() in ['field', 'electric', 'Ez']:
             f_name = 'Ez'
             
         for name, val in zip(ctrl_names, curr_cvals):

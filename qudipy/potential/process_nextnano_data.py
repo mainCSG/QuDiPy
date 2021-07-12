@@ -1,3 +1,9 @@
+"""
+Functions for covnerting 3D nextnano data to 2D data along user defined z-coordinate.
+
+@author: Kewei, Zach
+"""
+
 import numpy as np
 import os
 import re
@@ -5,6 +11,8 @@ import re
 
 def load_file(filename):
     '''
+    This function loads data files from a user defined nextnano simulation directory.
+
     Parameters
     ----------
     filename: relative path for the files of interest
@@ -48,66 +56,65 @@ def load_file(filename):
 
             return x, y, z
 
-def parse_ctrl_names(filename):
+def parse_ctrl_items(filename,ctrl_type = 'value'):
     '''
+    This function collects all of the control items in the filename string and
+    potential files are assumed to follow the syntax: 
+    'TYPE_C1NAME_C1VAL_C2NAME_C2VAL_..._CNNAME_CNVAL.txt'
+    where TYPE = 'Uxy' or 'Ez'. 
+    Refer to tutorial for a more explicit example.
+
     Parameters
     ----------
-    filename: String which is the relative path to the filename and containts control name information
+    filename: String which is the relative path to the filename and containts control items (either name/value) information
     
     Returns
     -------
-    ctrl_names: List of control names
+    ctrl_type: List of control items of the specific control type
     '''
 
-    # parse string via _,\, /
-    parsed_filename = re.split(r'[_/\\]',str(filename))
-    ctrl_names = []
-
-    # search through list of strings for control name attached to float and seperated by an _
-    for idx, strg in enumerate(parsed_filename):
-        try:
-            if float(strg) < 100:
-                ctrl_names.append(parsed_filename[idx-1])
-        except ValueError:
-            pass
-
-    return ctrl_names
-
-def parse_ctrl_vals(filename):
-    '''
-    Parameters
-    ----------
-    filename: String which is the relative path to the filename and containts control value information
-    
-    Returns
-    -------
-    ctrl_names: List of control values
-    '''
     # parse string via _,\, /
     parsed_filename = re.split(r'[_/\\]',filename)
-    ctrl_vals_list = []
 
-    # search through list of strings for floats from the parsed file name
-    for i in parsed_filename:
-        try:
-            if float(i) < 100:
-                ctrl_vals_list.append(float(i))
-        except ValueError:
-            pass
+    if ctrl_type.lower() in ['value','values']:
 
-    return ctrl_vals_list
+        ctrl_vals = []
+
+        # search through list of strings for floats from the parsed file name
+        for i in parsed_filename:
+            try:
+                if float(i) < 100:
+                    ctrl_vals.append(float(i))
+            except ValueError:
+                pass
+
+        return ctrl_vals
+
+    elif ctrl_type.lower() in ['name','names']:
+
+        ctrl_names = []
+
+        # search through list of strings for control name attached to float and seperated by an _
+        for idx, strg in enumerate(parsed_filename):
+            try:
+                if float(strg) < 100:
+                    ctrl_names.append(parsed_filename[idx-1])
+            except ValueError:
+                pass
+
+        return ctrl_names
 
 def import_folder(folder):
     '''
     Parameters
     ----------
-    folder: String, name of the folder where nextnano++ files are stored
+    folder: String, name of the folder where nextnano files are stored
     
     Returns
     -------
     data: List, where each element is a list of voltages, potentials, and coordinates
 
-    nextnano++ file structure:
+    nextnano file structure:
 
     /simulation_runs
         /simulation_run_#_with_gate_voltages
@@ -131,7 +138,7 @@ def import_folder(folder):
 
             # print('Importing .coord and .dat data files from {}:'.format(subdir.replace(str(folder),'')), end = '\r')
             print('Importing .coord and .dat data files from {}:'.format(subdir.replace(str(folder),'')))
-            voltage = parse_ctrl_vals(subdir)
+            voltage = parse_ctrl_items(subdir,'value')
             data_per_run.append(voltage)
 
             # first append potential data
@@ -328,19 +335,33 @@ def xy_potential(potentialL, gates, slice, f_type, dir_path):
     return 0
 
 def write_data(input_nextnano,output_preprocessed,slice,data_forms):
+    '''
+    Parameters
+    ----------
+    input_nextnano: 
+    output_preprocessed:
+    slice:
+        
+    Keyword Arguments
+    ----------
+    data_forms:
     
+    Returns
+    -------
+    A data directory containing field data based on the data_forms argument.
+    '''
     potentialL = import_folder(input_nextnano)
 
     for subdir, _, _ in os.walk(input_nextnano):
 
         # parse voltage information for the directory one level higher than /output
         if subdir != input_nextnano and subdir[-6:] == 'output':
-            gates = parse_ctrl_names(subdir)
+            gates = parse_ctrl_items(subdir,'name')
             break
 
     # write xy potential files
     for i in data_forms:
-        print('Converting 3D nextnano++ simulation data too 2D XY-plane {} data slice for z = {}.'.format(i,slice))
+        print('Converting 3D nextnano simulation data too 2D XY-plane {} data slice for z = {}.'.format(i,slice))
         xy_potential(potentialL, gates, slice, i,output_preprocessed)
 
 
