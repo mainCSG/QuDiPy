@@ -78,7 +78,7 @@ class QuantumCircuit:
         
         # Check if a single qubit index was loaded or if it was a list.
         # If not a list, make it one.
-        if isinstance(used_qubits, list) == False:
+        if not isinstance(used_qubits, list):
             used_qubits = [used_qubits]
         
         # Make sure used_qubits contains only ints

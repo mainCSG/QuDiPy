@@ -59,7 +59,57 @@ var_ret: type
 
 10. Follow PEP 8 style guidelines.
 
-11. Code should always prioritize readability first and optimality second.
+11. Line length should not exceed 99 characters in the main code, and 72 characters in the docstrings.
+	* **Long Inline Comments** - Example: 
+	`elems_sorted = sorted(elem, reverse=True) # iterable sorted in the reversed order; necessary for the correct consecutive application of the project_up operations`
+	can be changed to:
+		```
+		elems_sorted = sorted(elem, reverse=True)
+		    # iterable sorted in the reversed order; necessary for the correct 
+		    # consecutive application of the project_up operations
+		```
+	* **Long Function Calls and Definitions** - Example: 
+	`self.__plot_heatmap(self.csd.csd_der, None, None, r'V$_1$', r'V$_2$', cbar=cbar_flag, cbar_kws=cbar_kws)`
+	can be changed to:
+		```
+		self.__plot_heatmap(self.csd.csd_der, None, None, r'V$_1$', r'V$_2$', cbar=cbar_flag, 
+				    cbar_kws=cbar_kws)
+		```
 
-12. Comment, comment, comment.
+		**Note**: The lines should end with a comma, and subsequent lines should ideally be indented to align with the opening bracket of the function call or definition. If indenting to align with the opening bracket makes the code less readable, indent four spaces further than the previous line.
+	* **Long Arithmetic Operations** - Example: 
+	`n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 * (1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2)`
+	can be changed to:
+		```
+		n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 
+			* (1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2)
+		```
+		**Note**: New lines should begin with the arithmetic operator (ie +, /, -, *) and be indented four spaces more than the first line of the statement
+	* **Long Print Statements** - Example: 
+	`n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 * (1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2)`
+	can be changed to:
+		```
+		n_1 = 1/(1 - self.e_cm ** 2/(self.e_c1 * self.e_c2)) * 1/consts.e * (self.c_g1 * v_g1 
+			* (1 - self.e_cm ** 2 / (self.e_c1 * self.e_c2)) + self.c_g2 * v_g2)
+		```
+		**Note**: The lines should end with the quotation mark (ie ", ') with no trailing space and subsequent lines should begin with the concatenation operator (ie. '+') followed by a quotation mark and space (ie " , or ' ) and ideally be indented to align with the opening bracket of the print statement. If indenting to align with the opening bracket makes the code less readable, indent four spaces further than the previous line.
+	* **Long Conditional Statements** - Example: 
+	`if (x_temp < self.csd.v_g1_min) or (x_temp > self.csd.v_g1_max) or (y_temp < self.csd.v_g2_min) or (y_temp > self.csd.v_g2_max)`
+	can be changed to:
+		```
+		if (x_temp < self.csd.v_g1_min) or (x_temp > self.csd.v_g1_max) or \
+		    (y_temp < self.csd.v_g2_min) or (y_temp > self.csd.v_g2_max)
+		```
+
+		**Note**: The line should end with the conditional operator (ie not/and/or) followed by a backslash character and the subsequent line should begin with the conditional statement, indented by four spaces
+
+12. Naming should follow the following conventions (terminology consistent with: https://www.python.org/dev/peps/pep-0008/#id34):
+	* **Module names** should be lowercase (with no spaces)
+	* **Filenames** should be lower_case_with_underscores
+	* **Class names** should be CapitalizedWords
+	* **Function and method names** should be lower_case_with_underscores
+
+13. Code should always prioritize readability first and optimality second.
+
+14. Comment, comment, comment.
 

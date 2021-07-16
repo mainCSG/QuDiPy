@@ -42,8 +42,7 @@ def x(N, k):
             x_k = np.kron(x_k, PAULI_X)
         else:
             x_k = np.kron(x_k, PAULI_I)
-    else:
-        return x_k
+    return x_k
 
 
 def y(N, k):
@@ -75,8 +74,7 @@ def y(N, k):
             y_k = np.kron(y_k, PAULI_Y)
         else:
             y_k = np.kron(y_k, PAULI_I)
-    else:
-        return y_k
+    return y_k
 
 
 def z(N, k):
@@ -108,8 +106,7 @@ def z(N, k):
             z_k = np.kron(z_k, PAULI_Z)
         else:
             z_k = np.kron(z_k, PAULI_I)
-    else:
-        return z_k
+    return z_k
 
 #ladder operators X_k ± i Y_k
 
