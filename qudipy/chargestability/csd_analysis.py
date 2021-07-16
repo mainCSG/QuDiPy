@@ -620,10 +620,8 @@ class CSDAnalysis:
             fig, (ax1, ax2) = plt.subplots(1, 2)
             fig.suptitle("Voltage values vs derivatives (to check transition values)")
             ax1.set_title("V1 vs derivative")
-            ax1.set_ylim(0, max(csd_der.iloc[0,:])+.1)
             ax1.plot(self.csd.v_1_values, csd_der.iloc[0,:])
             ax2.set_title("V2 vs derivative")
-            ax2.set_ylim(0, max(csd_der.iloc[:, 0])+.1)
             ax2.plot(self.csd.v_2_values, csd_der.iloc[:,0])
             
 
