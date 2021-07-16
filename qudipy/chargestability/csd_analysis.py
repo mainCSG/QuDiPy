@@ -48,6 +48,7 @@ class CSDAnalysis:
         '''
         self.capacitances = capacitances
         self.csd = copy.copy(csd) # to avoid overwriting original csd object
+        self.csd.csd_der = None 
 
         # Create a new empty DataFrame to put numbers instead of tuples corresponding to occupations
         self.csd.csd = pd.DataFrame(0, index=self.csd.v_1_values, columns=self.csd.v_2_values,
