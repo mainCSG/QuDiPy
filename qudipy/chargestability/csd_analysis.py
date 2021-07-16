@@ -406,7 +406,7 @@ class CSDAnalysis:
             y = m * x + b
             sns.lineplot(x=x, y=y, ax=ax2)
 
-        # format the secodn axis and show the plot
+        # format the secod axis and show the plot
         ax2.set_xlim([self.csd.v_g1_min,self.csd.v_g1_max])
         ax2.set_ylim([self.csd.v_g2_min,self.csd.v_g2_max])
         ax2.get_yaxis().set_ticks([])
