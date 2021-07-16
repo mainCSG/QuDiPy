@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.sparse import data
 import seaborn as sns
 from scipy.ndimage import gaussian_filter
 from sklearn import cluster
@@ -156,7 +157,7 @@ class CSDAnalysis:
 
         Returns
         -------
-        Accumulator: 2D array with counts of each theta and 
+        accumulator: 2D array with counts of each theta and 
         thetas: values of theta for which accumulator swept over
         rhos: values of distance for which accumulator swept over
 
@@ -537,3 +538,107 @@ class CSDAnalysis:
         ax2.get_xaxis().set_ticks([])
         ax.set(xlabel=r'V$_1$', ylabel=r'V$_2$')
         plt.show()
+
+    def delta_V_from_csd (self, plot_der=True):
+        '''
+        From the charge stability diagram (CSD), extracts the voltage
+        change in gate 1(2) required to increase the occupancy of 
+        dot 1(2) by one electron.
+
+        Parameters
+        ----------
+        plot_der: If True, plots the derivative of the CSD to check 
+            that regions were separated properly (Default True).
+
+        Returns
+        -------
+        delta_V1(2): From the CSD, the voltage difference between charge
+            transitions. Returns None if there is only one charge 
+            transition in the CSD along the V1(2) direction.
+        '''
+        
+        # find the x, y, total derivatives respectively of the CSD; replace Nans with 0s
+        # TODO - if csd_der doesnt already exist
+        df_der_row = self.csd.csd.diff(axis=0).fillna(0)
+        df_der_col = self.csd.csd.diff(axis=1).fillna(0)
+        csd_der = np.sqrt(df_der_row**2 + df_der_col**2)
+        self.csd.csd_der = csd_der
+
+        # lists to store locations of charge transitions in dot 1(2)
+        chg_trans_1 = [] 
+        chg_trans_2 = [] 
+
+        # the non-zero derivatives will be grouped according to charge transitions
+        # if three adjacent derivative values, break up the region 
+        # use average of values in the region to calculate delta_V
+        reg_sum = 0 # sum of voltage values in charge transition region
+        reg_num = 0 # number of voltage values in charge transition region
+
+        # find points with non-zero derivative on x-axis (for delta_V1)
+        for i in range (len(self.csd.v_1_values)-2):
+            der_int_1 = csd_der.iloc[0, i] # derivative at x-intercept (for dot 1)
+            # append voltage value to list of charge transition values if non-zero
+            if der_int_1 != 0:
+                reg_sum += self.csd.v_1_values[i]
+                reg_num += 1
+            # if three subsequent derivative values are zero, denotes end of chg transition region
+            # TODO - use a threshold instead
+            elif [csd_der.iloc[0, i],csd_der.iloc[0, i+1],csd_der.iloc[0, i+2]]==[0,0,0] \
+                and [reg_sum, reg_num] != [0,0]:
+                chg_trans_1.append (reg_sum/reg_num)
+                reg_sum = 0
+                reg_num = 0
+        if [reg_sum, reg_num] != [0,0]:
+            chg_trans_1.append (reg_sum/reg_num)
+
+        # reset sum of values and number of values in charge transition region
+        reg_sum = 0 
+        reg_num = 0
+
+        # find points with non-zero derivative on y-axis (for delta_V2)
+        for i in range (len(self.csd.v_2_values)-2):
+            der_int_2 = csd_der.iloc[i, 0] # derivative at y-intercept (for dot 1)
+            # append voltage value to list of charge transition values if non-zero
+            if der_int_2 != 0:
+                reg_sum += self.csd.v_2_values[i]
+                reg_num += 1
+            # if three subsequent derivative values are zero, denotes end of chg transition region
+            elif [csd_der.iloc[i, 0],csd_der.iloc[i+1, 0],csd_der.iloc[i+2, 0]]==[0,0,0] \
+                and [reg_sum, reg_num] != [0,0]:
+                chg_trans_2.append (reg_sum/reg_num)
+                reg_sum = 0
+                reg_num = 0
+        if [reg_sum, reg_num] != [0,0]:
+            chg_trans_2.append (reg_sum/reg_num)
+
+        # printing for testing
+        print ('transitions, dot 1: ', chg_trans_1)
+        print ('transitions, dot 2: ', chg_trans_2)
+
+        # plotting derivatives 
+        if plot_der:
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.suptitle("Voltage values vs derivatives (to check transition values)")
+            ax1.set_title("V1 vs derivative")
+            ax1.set_ylim(0, max(csd_der.iloc[0,:])+.1)
+            ax1.plot(self.csd.v_1_values, csd_der.iloc[0,:])
+            ax2.set_title("V2 vs derivative")
+            ax2.set_ylim(0, max(csd_der.iloc[:, 0])+.1)
+            ax2.plot(self.csd.v_2_values, csd_der.iloc[:,0])
+            
+
+        # calculate voltage difference between adjacent dot 1 transition regions - this is delta_V1
+        if len(chg_trans_1) > 1:
+            delta_V1 = chg_trans_1[1] - chg_trans_1[0] 
+        else:
+            delta_V1 = None
+            print ('CSD needs a minimum of two charge transitions on CSD in V1 direction to determine delta_V1')
+        
+        # calculate voltage difference between adjacent dot 2 transition regions - this is delta_V2
+        if len(chg_trans_2) > 1:
+            delta_V2 = chg_trans_2[1] - chg_trans_2[0]
+        else:
+            delta_V2 = None
+            print ('CSD needs a minimum of two charge transitions on CSD in V2 direction to determine delta_V2')
+
+        return delta_V1, delta_V2
